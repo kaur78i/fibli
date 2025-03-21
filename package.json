@@ -20,10 +20,11 @@
     "@supabase/supabase-js": "^2.49.1",
     "@types/uuid": "^10.0.0",
     "axios": "^1.8.3",
+    "deepai": "^1.0.23",
     "expo": "52.0.33",
     "expo-blur": "^14.0.3",
     "expo-clipboard": "^7.0.1",
-    "expo-constants": "^17.0.5",
+    "expo-constants": "^17.0.8",
     "expo-font": "^13.0.3",
     "expo-haptics": "^14.0.1",
     "expo-linear-gradient": "^14.0.2",
@@ -58,6 +59,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
+    "@types/deepai": "^1.0.3",
     "@types/react": "~18.3.12",
     "typescript": "^5.3.3"
   }
