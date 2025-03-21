@@ -1,21 +1,25 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, ScrollView, Platform } from 'react-native';
+import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, ScrollView, Platform, Alert } from 'react-native';
 import { ChevronRight, Globe, Moon, Sun, Volume2, Sparkles, Star, Lightbulb } from 'lucide-react-native';
 import * as Animatable from 'react-native-animatable';
 import { LinearGradient } from 'expo-linear-gradient';
 import { languages } from '@/data/languages';
 import { useLanguage } from '@/context/LanguageContext';
-import { SpeechSettings, useUserPreferences } from '@/context/UserPreferencesContext';
+import { useUserPreferences } from '@/context/UserPreferencesContext';
 import { useTheme } from '@/context/ThemeContext';
 import Slider from '@/components/Slider';
-
+// import { purchaseOneTimeProduct, purchaseSubscription, ONE_TIME_PURCHASES, SUBSCRIPTION_SKUS } from '@/services/purchase';
 export default function SettingsScreen() {
   const { language, setLanguage, t } = useLanguage();
   const { preferences, updateSpeechSettings } = useUserPreferences();
   const { theme, setTheme, colors, currentTheme } = useTheme();
   const [speechRate, setSpeechRate] = useState(preferences.speechSettings.rate);
   const [speechPitch, setSpeechPitch] = useState(preferences.speechSettings.pitch);
-  
+  const [purchases, setPurchases] = useState({
+    uses20: false,
+    unlimited: false,
+  });
+
   const handleSpeechRateChange = (value: number) => {
     setSpeechRate(value);
     updateSpeechSettings({
@@ -23,7 +27,7 @@ export default function SettingsScreen() {
       rate: value
     });
   };
-  
+
   const handleSpeechPitchChange = (value: number) => {
     setSpeechPitch(value);
     updateSpeechSettings({
@@ -31,43 +35,65 @@ export default function SettingsScreen() {
       pitch: value
     });
   };
-  
+
   const handleLanguageSelect = (langCode: string) => {
     setLanguage(langCode);
   };
-  
+
   const handleThemeChange = (newTheme: 'light' | 'dark' | 'system') => {
     setTheme(newTheme);
   };
-  
+
+  const handlePurchase = async (type: 'uses20' | 'unlimited') => {
+    try {
+      if (purchases[type]) return;
+      if (type === 'uses20') {
+        // purchaseOneTimeProduct(ONE_TIME_PURCHASES.TWENTY_USES);
+      } else {
+        // purchaseSubscription(SUBSCRIPTION_SKUS.MONTHLY);
+      }
+      setPurchases(prev => ({
+        ...prev,
+        [type]: true
+      }));
+    } catch (error) {
+      console.error('Error purchasing:', error);
+      if (Platform.OS === 'web') {
+        alert('An error occurred while purchasing. Please try again.');
+      } else {
+        Alert.alert('Error', 'An error occurred while purchasing. Please try again.');
+      }
+    }
+  };
+
   const renderLanguageItem = (lang: { code: string, name: string, nativeName: string }) => {
     const isSelected = lang.code === language;
-    
+
     return (
-      <Animatable.View 
+      <Animatable.View
         key={lang.code}
         animation="fadeInRight"
         duration={500}
         delay={languages.findIndex(l => l.code === lang.code) * 100}
       >
-        <TouchableOpacity 
+        <TouchableOpacity
           style={[
-            styles.languageItem, 
+            styles.languageItem,
             { backgroundColor: colors.card, borderBottomColor: colors.cardBorder },
             isSelected && [styles.selectedLanguageItem, { backgroundColor: colors.primary }]
-          ]} 
+          ]}
           onPress={() => handleLanguageSelect(lang.code)}
         >
           <View style={styles.languageInfo}>
             <Text style={[
-              styles.languageName, 
+              styles.languageName,
               { color: colors.text },
               isSelected && styles.selectedLanguageText
             ]}>
               {lang.name}
             </Text>
             <Text style={[
-              styles.nativeName, 
+              styles.nativeName,
               { color: colors.secondaryText },
               isSelected && styles.selectedLanguageText
             ]}>
@@ -105,19 +131,19 @@ export default function SettingsScreen() {
         </View>
       </LinearGradient>
 
-      <ScrollView 
+      <ScrollView
         style={styles.content}
         contentContainerStyle={{ paddingBottom: 40 }}
       >
-        <Animatable.View 
-          animation="fadeInUp" 
-          duration={800} 
-          delay={200} 
+        <Animatable.View
+          animation="fadeInUp"
+          duration={800}
+          delay={200}
           style={[styles.section, { backgroundColor: colors.card }]}
         >
           <View style={[styles.sectionHeader, { backgroundColor: colors.cardBorder }]}>
-            {currentTheme === 'dark' ? 
-              <Moon size={20} color={colors.primary} /> : 
+            {currentTheme === 'dark' ?
+              <Moon size={20} color={colors.primary} /> :
               <Sun size={20} color={colors.primary} />
             }
             <Text style={[styles.sectionTitle, { color: colors.text }]}>{t.appearance}</Text>
@@ -125,7 +151,7 @@ export default function SettingsScreen() {
           <View style={styles.sectionContent}>
             <TouchableOpacity
               style={[
-                styles.themeItem, 
+                styles.themeItem,
                 { backgroundColor: colors.background },
                 theme === 'light' && {
                   borderColor: colors.primary,
@@ -144,10 +170,10 @@ export default function SettingsScreen() {
                 </Animatable.View>
               )}
             </TouchableOpacity>
-            
+
             <TouchableOpacity
               style={[
-                styles.themeItem, 
+                styles.themeItem,
                 { backgroundColor: colors.background },
                 theme === 'dark' && {
                   borderColor: colors.primary,
@@ -166,10 +192,10 @@ export default function SettingsScreen() {
                 </Animatable.View>
               )}
             </TouchableOpacity>
-            
+
             <TouchableOpacity
               style={[
-                styles.themeItem, 
+                styles.themeItem,
                 { backgroundColor: colors.background },
                 theme === 'system' && {
                   borderColor: colors.primary,
@@ -191,10 +217,10 @@ export default function SettingsScreen() {
           </View>
         </Animatable.View>
 
-        <Animatable.View 
-          animation="fadeInUp" 
-          duration={800} 
-          delay={300} 
+        <Animatable.View
+          animation="fadeInUp"
+          duration={800}
+          delay={300}
           style={[styles.section, { backgroundColor: colors.card }]}
         >
           <View style={[styles.sectionHeader, { backgroundColor: colors.cardBorder }]}>
@@ -205,11 +231,11 @@ export default function SettingsScreen() {
             {languages.map(renderLanguageItem)}
           </View>
         </Animatable.View>
-        
-        <Animatable.View 
-          animation="fadeInUp" 
-          duration={800} 
-          delay={700} 
+
+        <Animatable.View
+          animation="fadeInUp"
+          duration={800}
+          delay={700}
           style={[styles.section, { backgroundColor: colors.card }]}
         >
           <View style={[styles.sectionHeader, { backgroundColor: colors.cardBorder }]}>
@@ -232,7 +258,7 @@ export default function SettingsScreen() {
               trackColor={{ false: colors.cardBorder, true: colors.primaryLight }}
               thumbTintColor={colors.primary}
             />
-            
+
             <Text style={[styles.sliderLabel, { marginTop: 20, color: colors.text }]}>{t.speechPitch}</Text>
             <View style={styles.sliderLabels}>
               <Text style={[styles.sliderMinLabel, { color: colors.secondaryText }]}>{t.low}</Text>
@@ -250,11 +276,11 @@ export default function SettingsScreen() {
             />
           </View>
         </Animatable.View>
-        
-        <Animatable.View 
-          animation="fadeInUp" 
-          duration={800} 
-          delay={800} 
+
+        <Animatable.View
+          animation="fadeInUp"
+          duration={800}
+          delay={800}
           style={[styles.section, { backgroundColor: colors.card }]}
         >
           <View style={[styles.sectionHeader, { backgroundColor: colors.cardBorder }]}>
@@ -262,24 +288,55 @@ export default function SettingsScreen() {
             <Text style={[styles.sectionTitle, { color: colors.text }]}>Upgrade to Pro</Text>
           </View>
           <View style={styles.sectionContent}>
-            <TouchableOpacity 
-              style={[styles.purchaseItem, { backgroundColor: colors.background }]}
-              onPress={() => {/* Add your IAP logic here */}}
+            <TouchableOpacity
+              style={[
+                styles.purchaseItem,
+                { backgroundColor: colors.background },
+                purchases.uses20 && styles.purchasedItem,
+                purchases.uses20 && {
+                  shadowColor: '#FFD700',
+                  shadowOffset: { width: 0, height: 0 },
+                  shadowOpacity: 0.5,
+                  shadowRadius: 8,
+                  elevation: 8,
+                }
+              ]}
+              onPress={() => handlePurchase('uses20')}
             >
               <View style={styles.purchaseHeader}>
                 <Text style={[styles.purchaseTitle, { color: colors.text }]}>20 Uses Package</Text>
-                <Text style={[styles.purchasePrice, { color: colors.primary }]}>$4.99</Text>
+                {purchases.uses20 ? (
+                  <Text style={[styles.purchasedText, { color: colors.primary }]}>Purchased</Text>
+                ) : (
+                  <Text style={[styles.purchasePrice, { color: colors.primary }]}>$6.99</Text>
+                )}
               </View>
-              <Text style={[styles.purchaseDescription, { color: colors.secondaryText }]}>
+              <Text style={[
+                styles.purchaseDescription,
+                { color: colors.secondaryText },
+                purchases.uses20 && styles.purchasedDescription
+              ]}>
                 • Get 20 premium stories{'\n'}
                 • No monthly commitment{'\n'}
                 • Access to all premium features
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity 
-              style={[styles.purchaseItem, { backgroundColor: colors.background }]}
-              onPress={() => {/* Add your IAP logic here */}}
+            <TouchableOpacity
+              style={[
+                styles.purchaseItem,
+                { backgroundColor: colors.background },
+                purchases.unlimited && styles.purchasedItem,
+                purchases.unlimited && {
+                  shadowColor: '#FFD700',
+                  shadowOffset: { width: 0, height: 0 },
+                  shadowOpacity: 0.5,
+                  shadowRadius: 8,
+                  elevation: 8,
+                }
+              ]}
+              onPress={() => handlePurchase('unlimited')}
+              disabled={purchases.unlimited}
             >
               <View style={styles.purchaseHeader}>
                 <View>
@@ -288,9 +345,17 @@ export default function SettingsScreen() {
                   </View>
                   <Text style={[styles.purchaseTitle, { color: colors.text, marginTop: 24 }]}>Monthly Unlimited</Text>
                 </View>
-                <Text style={[styles.purchasePrice, { color: colors.primary }]}>$14.99/month</Text>
+                {purchases.unlimited ? (
+                  <Text style={[styles.purchasedText, { color: colors.primary }]}>Active</Text>
+                ) : (
+                  <Text style={[styles.purchasePrice, { color: colors.primary }]}>$14.99/month</Text>
+                )}
               </View>
-              <Text style={[styles.purchaseDescription, { color: colors.secondaryText }]}>
+              <Text style={[
+                styles.purchaseDescription,
+                { color: colors.secondaryText },
+                purchases.unlimited && styles.purchasedDescription
+              ]}>
                 • Unlimited premium stories{'\n'}
                 • Priority support{'\n'}
                 • Access to all premium features{'\n'}
@@ -299,11 +364,11 @@ export default function SettingsScreen() {
             </TouchableOpacity>
           </View>
         </Animatable.View>
-        
-        <Animatable.View 
-          animation="fadeInUp" 
-          duration={800} 
-          delay={900} 
+
+        <Animatable.View
+          animation="fadeInUp"
+          duration={800}
+          delay={900}
           style={[styles.section, { backgroundColor: colors.card }]}
         >
           <View style={[styles.sectionHeader, { backgroundColor: colors.cardBorder }]}>
@@ -320,12 +385,12 @@ export default function SettingsScreen() {
                 </Animatable.View>
               </View>
             </TouchableOpacity>
-            
+
             <TouchableOpacity style={[styles.aboutItem, { backgroundColor: colors.background }]}>
               <Text style={[styles.aboutLabel, { color: colors.text }]}>{t.privacyPolicy}</Text>
               <ChevronRight size={18} color={colors.secondaryText} />
             </TouchableOpacity>
-            
+
             <TouchableOpacity style={[styles.aboutItem, { backgroundColor: colors.background }]}>
               <Text style={[styles.aboutLabel, { color: colors.text }]}>{t.termsOfService}</Text>
               <ChevronRight size={18} color={colors.secondaryText} />
@@ -543,5 +608,15 @@ const styles = StyleSheet.create({
     color: '#000',
     fontSize: 12,
     fontFamily: 'Inter-Bold',
+  },
+  purchasedItem: {
+    opacity: 0.9,
+  },
+  purchasedText: {
+    fontSize: 16,
+    fontFamily: 'Inter-SemiBold',
+  },
+  purchasedDescription: {
+    opacity: 0.7,
   },
 });

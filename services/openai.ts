@@ -2,8 +2,9 @@ import { TStoryGist } from '@/types';
 import OpenAI from 'openai';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LANGUAGES } from './config';
-import { getTitles } from './supabase';
+import { downloadAndSaveImage, getTitles } from './supabase';
 import { generateImage } from './deepai';
+import { v4 as uuidv4 } from 'uuid';
 
 // Initialize the OpenAI client
 const openai = new OpenAI({
@@ -137,7 +138,8 @@ Camera: Medium shot, ensuring clear view of main elements
 Lighting: Soft, diffused main light with gentle rim lighting`;
 
     try {
-      const imageUrl = await generateImage(imagePrompt);
+      const imageUint8Array = await generateImage(imagePrompt);
+      const imageUrl = await downloadAndSaveImage(imageUint8Array, `${uuidv4()}.webp`);
 
       // Add the image URL to the story content
       storyContent.image = imageUrl;
@@ -251,12 +253,12 @@ Ensure all JSON is properly formatted and each chapter builds naturally from the
 
     // Parse the story response
     const storyContent = JSON.parse(storyResponse.choices[0].message.content || '{}');
- 
 
     const chapters = await Promise.all(storyContent.chapters.map(async (chapter: any) => {
-      const imageResponse = await generateImage(chapter.imagePrompt);
+      const imageUint8Array = await generateImage(chapter.imagePrompt);
+      const imageUrl = await downloadAndSaveImage(imageUint8Array, `${uuidv4()}.webp`);
 
-      chapter.image = imageResponse;
+      chapter.image = imageUrl;
       delete chapter.imagePrompt;
 
       return chapter;
@@ -274,7 +276,6 @@ export const suggestTitles = async (user_id: string) => {
     const langCode = await AsyncStorage.getItem('language') || 'en';
     const language = LANGUAGES.find(l => l.code === langCode)?.name || 'English';
     const existingTitles = await getTitles(user_id);
-    console.log(langCode, language);
     const aiResponse = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [

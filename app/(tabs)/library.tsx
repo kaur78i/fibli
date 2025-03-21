@@ -160,6 +160,7 @@ export default function LibraryScreen() {
       if (!previewGist) return;
 
       // Add the new story to the library
+      console.log('userId', userId);
       await addInvitedStory({ gist_id, user_id: userId! });
       setGists(prev => [previewGist, ...prev]);
 

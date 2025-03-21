@@ -1,8 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { TStory, TStoryGist, TChapter } from '@/types';
+import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
-import axios from 'axios';
+import base64 from 'base64-js';
 
 // Initialize the Supabase client
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
@@ -21,61 +22,43 @@ const supabase = createClient(supabaseUrl, supabaseKey, {
   },
 });
 
-export const downloadAndSaveImage = async (imageUrl: string, fileName: string): Promise<string> => {
+export const downloadAndSaveImage = async (imageBuffer: Uint8Array, fileName: string) => {
   try {
-    // Check if the image is a base64 string or a data URL
-    if (imageUrl.startsWith('data:image')) {
-      // Handle base64 image data
-      const response = await fetch(imageUrl);
-      const blob = await response.blob();
+    // Convert Uint8Array to base64 string using base64-js
+    const base64String = base64.fromByteArray(imageBuffer);
+    // Create a fetch-compatible Blob from base64
+    const response = await fetch(`data:image/webp;base64,${base64String}`);
+    const blob = await response.blob();
+    // Upload Blob to Supabase
+    const { data, error } = await supabase.storage
+      .from('images')
+      .upload(`${fileName}`, blob, {
+        contentType: 'image/png',
+        upsert: true
+      });
 
-      console.log('blob size from base64:', blob.size);
-
-      // Upload to Supabase
-      const { data, error } = await supabase.storage
-        .from('images')
-        .upload(`${fileName}`, blob, {
-          contentType: blob.type || 'image/png',
-          upsert: true
-        });
-
-      if (error) {
-        console.error('Error uploading image to storage:', error);
-        throw error;
-      }
-
-      const { data: publicUrlData } = supabase.storage
-        .from('images')
-        .getPublicUrl(data.path);
-
-      return publicUrlData.publicUrl;
+    if (error) {
+      console.error('Error uploading image to storage:', error);
+      throw error;
     }
 
-    // For DALL-E URLs or other remote images, start a background download process
-    // but return the original URL immediately so UI can display something
+    const { data: publicUrlData } = supabase.storage
+      .from('images')
+      .getPublicUrl(data.path);
 
-    // Start the background download process without awaiting it
-    downloadImageInBackground(imageUrl, fileName);
-
-    // Return the original DALL-E URL immediately
-    return imageUrl;
+    return publicUrlData.publicUrl;
   } catch (error) {
     console.error('Error processing image:', error);
-    // If any error occurs, just return the original URL as fallback
-    return imageUrl;
+    throw error;
   }
 };
 
 // Background download function with retry logic
 const downloadImageInBackground = async (imageUrl: string, fileName: string, retryCount = 0, maxRetries = 3): Promise<void> => {
   try {
-    const response = await axios({
-      url: imageUrl,  // Will work directly with DeepAI URL
-      method: 'GET',
-      responseType: 'arraybuffer',
-    });
-
-    const blob = new Blob([response.data], { type: 'image/png' });
+    // First fetch the image using fetch API instead of axios
+    const response = await fetch(imageUrl);
+    const blob = await response.blob();
     console.log('blob size:', blob.size);
 
     // Upload to Supabase storage
@@ -194,13 +177,12 @@ const updateImageUrlInDatabase = async (temporaryUrl: string, permanentUrl: stri
 };
 
 export const saveStoryGist = async (storyGist: TStoryGist) => {
-  const imageUrl = await downloadAndSaveImage(storyGist.image, `${uuidv4()}.png`);
   const { data, error } = await supabase
     .from('story_gists')
     .insert({
       title: storyGist.title,
       preview: storyGist.preview,
-      image: imageUrl,
+      image: storyGist.image,
       chapters: storyGist.chapters,
       user_id: storyGist.user_id,
       age_range: storyGist.age_range,
@@ -220,24 +202,13 @@ export const saveStoryGist = async (storyGist: TStoryGist) => {
 
 export const saveStory = async ({ gist_id, ...story }: TStory & { gist_id: string }) => {
   try {
-    const imageUrl = await Promise.all(story.chapters.map(async (chapter) => {
-      return await downloadAndSaveImage(chapter.image, `${uuidv4()}.png`);
-    }));
-
-    const chapters = story.chapters.map((chapter, index) => {
-      return {
-        ...chapter,
-        image: imageUrl[index],
-      };
-    });
-
     const { data, error } = await supabase
       .from('stories')
       .insert({
         title: story.title,
         preview: story.preview,
         image: story.image,
-        chapters,
+        chapters: story.chapters,
         user_id: story.user_id,
       })
       .select('id')

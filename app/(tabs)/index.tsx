@@ -12,8 +12,11 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Sparkles } from 'lucide-react-native';
 import * as Animatable from 'react-native-animatable';
 import { saveStoryGist, saveStory, removeGist } from '@/services/supabase';
-import SecureStore from 'expo-secure-store';
 import { TStoryGist } from '@/types';
+
+import * as SecureStore from 'expo-secure-store';
+import 'react-native-get-random-values';
+import { v4 as uuidv4 } from 'uuid';
 
 type AppState = 'input' | 'settings' | 'gist';
 
@@ -32,12 +35,40 @@ export default function NewStoryScreen() {
 
   useEffect(() => {
     const getUserId = async () => {
-      if (Platform.OS === 'web') {
-        setUserId(localStorage.getItem('user_id'));
-      } else {
-        setUserId(await SecureStore.getItemAsync('user_id'));
+      try {
+        if (Platform.OS === 'web') {
+          const user_id = localStorage.getItem('user_id');
+          if (!user_id || user_id === 'undefined' || user_id === 'null' || user_id === '') {
+            const newUserId = uuidv4();
+            console.log('Setting new user_id in localStorage:', newUserId);
+            setUserId(newUserId);
+            localStorage.setItem('user_id', newUserId);
+          } else {
+            setUserId(user_id);
+            console.log('Existing user_id in localStorage:', user_id);
+          }
+        } else {
+          if (!SecureStore || !SecureStore.getItemAsync) {
+            console.error('SecureStore is not available');
+            return;
+          }
+
+          const user_id = await SecureStore.getItemAsync('user_id');
+          if (!user_id || user_id === 'undefined' || user_id === 'null' || user_id === '') {
+            const newUserId = uuidv4();
+            console.log('Setting new user_id in SecureStore:', newUserId);
+            setUserId(newUserId);
+            await SecureStore.setItemAsync('user_id', newUserId);
+          } else {
+            setUserId(user_id);
+            console.log('Existing user_id in SecureStore:', user_id);
+          }
+        }
+      } catch (error) {
+        console.error('Error getting/setting user ID:', error);
       }
     };
+
     getUserId();
   }, []);
 
@@ -50,8 +81,6 @@ export default function NewStoryScreen() {
     try {
       setSettings(storySettings);
       updateLastUsedStorySettings(storySettings);
-      console.log('storySettings', storySettings);
-      console.log('title', title);
       setIsGistGenerating(true);
       setState('gist');
 
@@ -148,10 +177,6 @@ export default function NewStoryScreen() {
       }
     }
   }
-
-  useEffect(() => {
-    console.log('user_id', user_id);
-  }, [user_id]);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>

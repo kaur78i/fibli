@@ -39,13 +39,16 @@ interface PurchaseState {
 
 const FREE_GENERATIONS_KEY = 'free_generations';
 const PURCHASED_USES_KEY = 'purchased_uses';
+const PURCHASED_UNLIMITED_KEY = 'purchased_unlimited';
 const MAX_FREE_GENERATIONS = 1;
 
 let purchaseUpdateSubscription: any;
 let purchaseErrorSubscription: any;
 
+const isWeb = Platform.OS === 'web';
+
 export async function initializePurchases() {
-  if (Platform.OS === 'web') return;
+  if (isWeb) return;
 
   try {
     await initConnection();
@@ -94,7 +97,7 @@ export async function initializePurchases() {
 }
 
 async function handleSubscriptionPurchase(purchase: any) {
-  await SecureStore.setItemAsync('hasActiveSubscription', 'true');
+  await SecureStore.setItemAsync(PURCHASED_UNLIMITED_KEY, 'true');
 }
 
 async function handleOneTimePurchase(purchase: any) {
@@ -114,7 +117,10 @@ export async function endPurchaseConnection() {
 }
 
 export async function getMyProducts(): Promise<Array<Subscription | Product>> {
-  if (Platform.OS === 'web') return [];
+  if (isWeb) {
+    console.log('IAP not supported on web platform');
+    return [];
+  }
 
   try {
     const [subscriptions, products] = await Promise.all([
@@ -130,7 +136,7 @@ export async function getMyProducts(): Promise<Array<Subscription | Product>> {
 }
 
 export async function purchaseSubscription(sku: string): Promise<boolean> {
-  if (Platform.OS === 'web') return false;
+  if (isWeb) return false;
 
   try {
     await requestSubscription({ sku });
@@ -142,7 +148,7 @@ export async function purchaseSubscription(sku: string): Promise<boolean> {
 }
 
 export async function purchaseOneTimeProduct(sku: string): Promise<boolean> {
-  if (Platform.OS === 'web') return false;
+  if (isWeb) return false;
 
   try {
     await requestPurchase({ sku });
@@ -220,10 +226,4 @@ export async function consumeGeneration() {
   } catch (error) {
     console.error('Error consuming generation:', error);
   }
-}
-
-// Helper function for server-side validation (implement according to your backend)
-async function validateReceiptWithServer(receipt: string) {
-  // Implement your server validation logic here
-  return { valid: true }; // Simplified example
 }

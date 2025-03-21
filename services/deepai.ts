@@ -1,21 +1,28 @@
+import axios from "axios";
+import FormData from "form-data";
 
+export const generateImage = async (prompt: string): Promise<Uint8Array> => {
+  const payload = {
+    prompt: prompt,
+    output_format: "webp"
+  };
 
-export const generateImage = async (prompt: string) => {
-  const resp = await fetch('https://api.deepai.org/api/text2img', {
-      method: 'POST',
+  const response = await axios.postForm(
+    `https://api.stability.ai/v2beta/stable-image/generate/core`,
+    axios.toFormData(payload, new FormData()),
+    {
+      validateStatus: undefined,
+      responseType: "arraybuffer",
       headers: {
-          'Content-Type': 'application/json',
-          'api-key': process.env.EXPO_PUBLIC_DEEPAI_KEY!
+        Authorization: `Bearer ${process.env.EXPO_PUBLIC_STABILITY_API_KEY}`,
+        Accept: "image/*"
       },
-      body: JSON.stringify({
-          text: prompt,
-          width: "1024",
-          height: "768",
-          genius_preference: 'anime',
-          image_generator_version: 'hd'
-      })
-  });
-  
-  const data = await resp.json();
-  return data.output_url;
+    },
+  );
+
+  if (response.status === 200) {
+    return new Uint8Array(response.data);
+  } else {
+    throw new Error(`${response.status}: ${response.data.toString()}`);
+  }
 }

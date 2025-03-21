@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Animated } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, Animated, Platform } from 'react-native';
 import { Mic, Send, Sparkles, Star as Stars } from 'lucide-react-native';
 import * as Animatable from 'react-native-animatable';
 import { useLanguage } from '@/context/LanguageContext';
 import { useUserPreferences } from '@/context/UserPreferencesContext';
 import { useTheme } from '@/context/ThemeContext';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 import { suggestTitles } from '@/services/openai';
 import { useFocusEffect } from '@react-navigation/native';
 type InputTitleProps = {
@@ -31,9 +31,16 @@ export default function InputTitle({ onSubmit }: InputTitleProps) {
 
   useEffect(() => {
     const fetchUserId = async () => {
-      const user_id = await AsyncStorage.getItem('user_id');
-      if (user_id) {
-        setUserId(user_id);
+      if (Platform.OS === 'web') {
+        const user_id = localStorage.getItem('user_id');
+        if (user_id) {
+          setUserId(user_id);
+        }
+      } else {
+        const user_id = await SecureStore.getItemAsync('user_id');
+        if (user_id) {
+          setUserId(user_id);
+        }
       }
     };
     fetchUserId();
