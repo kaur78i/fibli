@@ -3,6 +3,7 @@ import OpenAI from 'openai';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LANGUAGES } from './config';
 import { getTitles } from './supabase';
+import { generateImage } from './deepai';
 
 // Initialize the OpenAI client
 const openai = new OpenAI({
@@ -136,16 +137,10 @@ Camera: Medium shot, ensuring clear view of main elements
 Lighting: Soft, diffused main light with gentle rim lighting`;
 
     try {
-      const imageResponse = await openai.images.generate({
-        model: "dall-e-3",
-        prompt: imagePrompt,
-        n: 1,
-        size: "1024x1024",
-        quality: "standard",
-      });
+      const imageUrl = await generateImage(imagePrompt);
 
       // Add the image URL to the story content
-      storyContent.image = imageResponse.data[0]?.url || '';
+      storyContent.image = imageUrl;
 
       // Remove the imagePrompt field as it's no longer needed
       delete storyContent.imagePrompt;
@@ -259,15 +254,9 @@ Ensure all JSON is properly formatted and each chapter builds naturally from the
  
 
     const chapters = await Promise.all(storyContent.chapters.map(async (chapter: any) => {
-      const imageResponse = await openai.images.generate({
-        model: "dall-e-3",
-        prompt: chapter.imagePrompt,
-        n: 1,
-        size: "1024x1024",
-        quality: "standard",
-      });
+      const imageResponse = await generateImage(chapter.imagePrompt);
 
-      chapter.image = imageResponse.data[0]?.url || '';
+      chapter.image = imageResponse;
       delete chapter.imagePrompt;
 
       return chapter;

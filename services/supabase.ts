@@ -69,10 +69,8 @@ export const downloadAndSaveImage = async (imageUrl: string, fileName: string): 
 // Background download function with retry logic
 const downloadImageInBackground = async (imageUrl: string, fileName: string, retryCount = 0, maxRetries = 3): Promise<void> => {
   try {
-    const proxyUrl = 'https://api.allorigins.win/raw?url=';
-    const encodedUrl = encodeURIComponent(imageUrl);
     const response = await axios({
-      url: `${proxyUrl}${encodedUrl}`,
+      url: imageUrl,  // Will work directly with DeepAI URL
       method: 'GET',
       responseType: 'arraybuffer',
     });
