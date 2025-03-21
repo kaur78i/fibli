@@ -254,6 +254,55 @@ export default function SettingsScreen() {
         <Animatable.View 
           animation="fadeInUp" 
           duration={800} 
+          delay={800} 
+          style={[styles.section, { backgroundColor: colors.card }]}
+        >
+          <View style={[styles.sectionHeader, { backgroundColor: colors.cardBorder }]}>
+            <Star size={20} color={colors.primary} />
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Upgrade to Pro</Text>
+          </View>
+          <View style={styles.sectionContent}>
+            <TouchableOpacity 
+              style={[styles.purchaseItem, { backgroundColor: colors.background }]}
+              onPress={() => {/* Add your IAP logic here */}}
+            >
+              <View style={styles.purchaseHeader}>
+                <Text style={[styles.purchaseTitle, { color: colors.text }]}>20 Uses Package</Text>
+                <Text style={[styles.purchasePrice, { color: colors.primary }]}>$4.99</Text>
+              </View>
+              <Text style={[styles.purchaseDescription, { color: colors.secondaryText }]}>
+                • Get 20 premium stories{'\n'}
+                • No monthly commitment{'\n'}
+                • Access to all premium features
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[styles.purchaseItem, { backgroundColor: colors.background }]}
+              onPress={() => {/* Add your IAP logic here */}}
+            >
+              <View style={styles.purchaseHeader}>
+                <View>
+                  <View style={styles.subscriptionBadge}>
+                    <Text style={styles.subscriptionBadgeText}>BEST VALUE</Text>
+                  </View>
+                  <Text style={[styles.purchaseTitle, { color: colors.text, marginTop: 24 }]}>Monthly Unlimited</Text>
+                </View>
+                <Text style={[styles.purchasePrice, { color: colors.primary }]}>$14.99/month</Text>
+              </View>
+              <Text style={[styles.purchaseDescription, { color: colors.secondaryText }]}>
+                • Unlimited premium stories{'\n'}
+                • Priority support{'\n'}
+                • Access to all premium features{'\n'}
+                • Cancel anytime
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </Animatable.View>
+        
+        <Animatable.View 
+          animation="fadeInUp" 
+          duration={800} 
           delay={900} 
           style={[styles.section, { backgroundColor: colors.card }]}
         >
@@ -451,5 +500,48 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'Inter-Regular',
     marginRight: 8,
+  },
+  purchaseItem: {
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 16,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  purchaseHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    marginBottom: 12,
+  },
+  purchaseTitle: {
+    fontSize: 18,
+    fontFamily: 'Inter-SemiBold',
+  },
+  purchasePrice: {
+    fontSize: 20,
+    fontFamily: 'Inter-Bold',
+  },
+  purchaseDescription: {
+    fontSize: 14,
+    fontFamily: 'Inter-Regular',
+    lineHeight: 22,
+  },
+  subscriptionBadge: {
+    position: 'absolute',
+    top: -20,
+    left: 0,
+    backgroundColor: '#FFD700',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+  },
+  subscriptionBadgeText: {
+    color: '#000',
+    fontSize: 12,
+    fontFamily: 'Inter-Bold',
   },
 });

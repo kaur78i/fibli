@@ -5,19 +5,24 @@ import {
   purchaseUpdatedListener,
   purchaseErrorListener,
   getSubscriptions,
+  getProducts,
   requestSubscription,
-  getPurchaseHistory,
+  requestPurchase,
+  getAvailablePurchases,
   PurchaseError,
-  Subscription
+  Subscription,
+  Product
 } from 'react-native-iap';
-
 import SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 
-// Subscription IDs should match those in App Store Connect
+// Product IDs
 export const SUBSCRIPTION_SKUS = {
-  MONTHLY: 'com.coookyapp.subscription.monthly',
-  ANNUAL: 'com.coookyapp.subscription.annual'
+  MONTHLY: 'com.fibli.subscription.monthly',
+} as const;
+
+export const ONE_TIME_PURCHASES = {
+  TWENTY_USES: 'com.fibli.iap.twentyuse',
 } as const;
 
 interface SubscriptionStatus {
@@ -26,8 +31,15 @@ interface SubscriptionStatus {
   latestReceipt?: string;
 }
 
-const FREE_GENERATIONS_KEY = 'free_recipe_generations';
-const MAX_FREE_GENERATIONS = 3;
+interface PurchaseState {
+  freeGenerations: number;
+  purchasedUses: number;
+  isSubscribed: boolean;
+}
+
+const FREE_GENERATIONS_KEY = 'free_generations';
+const PURCHASED_USES_KEY = 'purchased_uses';
+const MAX_FREE_GENERATIONS = 1;
 
 let purchaseUpdateSubscription: any;
 let purchaseErrorSubscription: any;
@@ -38,15 +50,36 @@ export async function initializePurchases() {
   try {
     await initConnection();
 
+    // Restore previous purchases on app start
+    const availablePurchases = await getAvailablePurchases();
+    availablePurchases.forEach(async (purchase) => {
+      if (purchase.productId === SUBSCRIPTION_SKUS.MONTHLY) {
+        await handleSubscriptionPurchase(purchase);
+      }
+      if (purchase.productId === ONE_TIME_PURCHASES.TWENTY_USES) {
+        await handleOneTimePurchase(purchase);
+      }
+    });
+
     // Set up listeners
     purchaseUpdateSubscription = purchaseUpdatedListener(async (purchase) => {
       const receipt = purchase.transactionReceipt;
       if (receipt) {
         try {
+          // Validate receipt with server (recommended)
+          // await validateReceiptWithServer(receipt);
+
+          if (purchase.productId === SUBSCRIPTION_SKUS.MONTHLY) {
+            await handleSubscriptionPurchase(purchase);
+          }
+
+          if (purchase.productId === ONE_TIME_PURCHASES.TWENTY_USES) {
+            await handleOneTimePurchase(purchase);
+          }
+
           await finishTransaction({ purchase });
-          await SecureStore.setItemAsync('hasActiveSubscription', 'true');
         } catch (error) {
-          console.error('Error finishing transaction:', error);
+          console.error('Error handling purchase:', error);
         }
       }
     });
@@ -60,6 +93,16 @@ export async function initializePurchases() {
   }
 }
 
+async function handleSubscriptionPurchase(purchase: any) {
+  await SecureStore.setItemAsync('hasActiveSubscription', 'true');
+}
+
+async function handleOneTimePurchase(purchase: any) {
+  const currentUses = await SecureStore.getItemAsync(PURCHASED_USES_KEY) || '0';
+  const newUses = parseInt(currentUses) + 20;
+  await SecureStore.setItemAsync(PURCHASED_USES_KEY, newUses.toString());
+}
+
 export async function endPurchaseConnection() {
   if (purchaseUpdateSubscription) {
     purchaseUpdateSubscription.remove();
@@ -70,17 +113,18 @@ export async function endPurchaseConnection() {
   await endConnection();
 }
 
-export async function getSubscriptionProducts(): Promise<Subscription[]> {
+export async function getMyProducts(): Promise<Array<Subscription | Product>> {
   if (Platform.OS === 'web') return [];
 
   try {
-    const subscriptions = await getSubscriptions({
-      skus: [SUBSCRIPTION_SKUS.MONTHLY, SUBSCRIPTION_SKUS.ANNUAL]
-    });
-
-    return subscriptions;
+    const [subscriptions, products] = await Promise.all([
+      getSubscriptions({ skus: [SUBSCRIPTION_SKUS.MONTHLY] }),
+      getProducts({ skus: [ONE_TIME_PURCHASES.TWENTY_USES] })
+    ]);
+    
+    return [...subscriptions, ...products];
   } catch (error) {
-    console.error('Error getting subscriptions:', error);
+    console.error('Error fetching products:', error);
     return [];
   }
 }
@@ -89,10 +133,7 @@ export async function purchaseSubscription(sku: string): Promise<boolean> {
   if (Platform.OS === 'web') return false;
 
   try {
-    await requestSubscription({
-      sku: sku
-    });
-    await SecureStore.setItemAsync('hasActiveSubscription', 'true');
+    await requestSubscription({ sku });
     return true;
   } catch (error) {
     console.error('Error purchasing subscription:', error);
@@ -100,26 +141,58 @@ export async function purchaseSubscription(sku: string): Promise<boolean> {
   }
 }
 
+export async function purchaseOneTimeProduct(sku: string): Promise<boolean> {
+  if (Platform.OS === 'web') return false;
+
+  try {
+    await requestPurchase({ sku });
+    return true;
+  } catch (error) {
+    console.error('Error purchasing product:', error);
+    return false;
+  }
+}
+
+export async function getPurchaseState(): Promise<PurchaseState> {
+  try {
+    const [free, purchased, subStatus] = await Promise.all([
+      SecureStore.getItemAsync(FREE_GENERATIONS_KEY),
+      SecureStore.getItemAsync(PURCHASED_USES_KEY),
+      getSubscriptionStatus()
+    ]);
+
+    return {
+      freeGenerations: Math.max(0, MAX_FREE_GENERATIONS - parseInt(free || '0')),
+      purchasedUses: parseInt(purchased || '0'),
+      isSubscribed: subStatus.isSubscribed
+    };
+  } catch (error) {
+    console.error('Error getting purchase state:', error);
+    return {
+      freeGenerations: 0,
+      purchasedUses: 0,
+      isSubscribed: false
+    };
+  }
+}
+
 export async function getSubscriptionStatus(): Promise<SubscriptionStatus> {
   try {
-    const purchaseHistory = await getPurchaseHistory();
-
-    let expiryDate: number | undefined;
-    const subscriptionPurchases = purchaseHistory.filter(
-      (purchase) => purchase?.productId === SUBSCRIPTION_SKUS.MONTHLY || purchase?.productId === SUBSCRIPTION_SKUS.ANNUAL
+    const availablePurchases = await getAvailablePurchases();
+    const subscriptions = availablePurchases.filter(
+      p => p.productId === SUBSCRIPTION_SKUS.MONTHLY
     );
 
-    const latestSubscription = subscriptionPurchases.sort((a, b) => b?.transactionDate - a?.transactionDate)[0];
-    if (latestSubscription?.productId === SUBSCRIPTION_SKUS.MONTHLY) {
-      expiryDate = latestSubscription?.transactionDate + 30 * 24 * 60 * 60 * 1000;
-    } else if (latestSubscription?.productId === SUBSCRIPTION_SKUS.ANNUAL) {
-      expiryDate = latestSubscription?.transactionDate + 365 * 24 * 60 * 60 * 1000;
-    }
-    await SecureStore.setItemAsync('hasActiveSubscription', (expiryDate ? expiryDate > Date.now() : false).toString());
+    // Find the latest valid subscription
+    const latestSubscription = subscriptions
+      .sort((a, b) => b.transactionDate - a.transactionDate)
+      .find(p => p.transactionDate * 1000 > Date.now());
+
+    const isSubscribed = !!latestSubscription;
     return {
-      isSubscribed: expiryDate ? expiryDate > Date.now() : false,
-      expiryDate: expiryDate ? expiryDate : undefined,
-      latestReceipt: latestSubscription?.transactionReceipt || undefined
+      isSubscribed,
+      expiryDate: latestSubscription?.transactionDate ? latestSubscription.transactionDate * 1000 : undefined,
+      latestReceipt: latestSubscription?.transactionReceipt
     };
   } catch (error) {
     console.error('Error getting subscription status:', error);
@@ -127,24 +200,30 @@ export async function getSubscriptionStatus(): Promise<SubscriptionStatus> {
   }
 }
 
-export async function getFreeGenerationsRemaining() {
+export async function consumeGeneration() {
   try {
-    const used = await SecureStore.getItemAsync(FREE_GENERATIONS_KEY);
-    const usedCount = used ? parseInt(used) : 0;
-    await SecureStore.setItemAsync(FREE_GENERATIONS_KEY, (usedCount).toString());
-    return Math.max(0, MAX_FREE_GENERATIONS - usedCount);
+    const [free, purchased] = await Promise.all([
+      SecureStore.getItemAsync(FREE_GENERATIONS_KEY),
+      SecureStore.getItemAsync(PURCHASED_USES_KEY)
+    ]);
+
+    let freeCount = parseInt(free || '0');
+    let purchasedCount = parseInt(purchased || '0');
+
+    if (purchasedCount > 0) {
+      purchasedCount--;
+      await SecureStore.setItemAsync(PURCHASED_USES_KEY, purchasedCount.toString());
+    } else {
+      freeCount++;
+      await SecureStore.setItemAsync(FREE_GENERATIONS_KEY, freeCount.toString());
+    }
   } catch (error) {
-    console.error('Error getting free generations:', error);
-    return 0;
+    console.error('Error consuming generation:', error);
   }
 }
 
-export async function incrementGenerationCount() {
-  try {
-    const used = await SecureStore.getItemAsync(FREE_GENERATIONS_KEY);
-    const usedCount = used ? parseInt(used) : 0;
-    await SecureStore.setItemAsync(FREE_GENERATIONS_KEY, (usedCount + 1).toString());
-  } catch (error) {
-    console.error('Error incrementing generation count:', error);
-  }
+// Helper function for server-side validation (implement according to your backend)
+async function validateReceiptWithServer(receipt: string) {
+  // Implement your server validation logic here
+  return { valid: true }; // Simplified example
 }
