@@ -28,6 +28,7 @@ export const downloadAndSaveImage = async (imageBuffer: Uint8Array, fileName: st
     const base64String = base64.fromByteArray(imageBuffer);
     // Create a fetch-compatible Blob from base64
     const response = await fetch(`data:image/webp;base64,${base64String}`);
+    console.log("response", response)
     const blob = await response.blob();
     // Upload Blob to Supabase
     const { data, error } = await supabase.storage

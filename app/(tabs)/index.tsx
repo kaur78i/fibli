@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, SafeAreaView, KeyboardAvoidingView, Platform, ScrollView, Alert, Image } from 'react-native';
+import { StyleSheet, Text, View, SafeAreaView, KeyboardAvoidingView, Platform, ScrollView, Alert } from 'react-native';
+import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
 import InputTitle from '@/components/InputTitle';
 import GistView from '@/components/GistView';
