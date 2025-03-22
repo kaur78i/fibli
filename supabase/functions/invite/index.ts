@@ -5,16 +5,49 @@
 // Setup type definitions for built-in Supabase Runtime APIs
 import "jsr:@supabase/functions-js/edge-runtime.d.ts"
 // Import Supabase client at the top level
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.29.0';
-
-console.log("Hello from Functions!")
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
 Deno.serve(async (req) => {
+  // Handle CORS preflight requests first
+  if (req.method === 'OPTIONS') {
+    return new Response(null, {
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, Authorization, Content-Type, from_app',
+      },
+    });
+  }
+
   // Get code from URL query parameters
   const url = new URL(req.url);
-  const code = url.searchParams.get('code');
+  const fullCode = url.searchParams.get('code');
+  // Extract just the UUID from the code parameter if it's a full URL
+  const code = fullCode?.includes('http') 
+    ? new URL(fullCode).searchParams.get('code')
+    : fullCode;
+  const from_app = req.headers.get('from_app');
 
-  console.log("code", code)
+  console.log('code', code)
+  
+  // Add CORS headers to all responses
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, Authorization, Content-Type, from_app',
+  };
+
+  if (!from_app) {
+    return new Response(null, {
+      status: 302,
+      headers: {
+        ...corsHeaders,
+        "Location": Deno.env.get('APP_STORE_URL'),
+        "Content-Type": "application/json"
+      }
+    });
+  }
+  
   // Get Supabase client - moved the import to the top of the file
   const supabaseClient = Deno.env.get('SUPABASE_URL') 
     ? createClient(
@@ -32,11 +65,8 @@ Deno.serve(async (req) => {
       // Query the story_gists table using the provided code
       const { data: storyData, error } = await supabaseClient
         .from('story_gists')
-        .update({
-          inviting: true
-        })
+        .select('*')
         .eq('id', code)
-        .select()
         .single();
       
       if (error) throw error;
@@ -60,7 +90,12 @@ Deno.serve(async (req) => {
 
   return new Response(
     JSON.stringify(data),
-    { headers: { "Content-Type": "application/json" } },
+    { 
+      headers: { 
+        ...corsHeaders,
+        "Content-Type": "application/json" 
+      } 
+    },
   )
 })
 

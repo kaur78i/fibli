@@ -89,8 +89,8 @@ export default function LibraryScreen() {
 
   const handleShare = async (gistId: string) => {
     try {
-      const code = `${gistId}`;
-      await Clipboard.setStringAsync(code);
+      const inviteCode = `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/invite?code=${gistId}`;
+      await Clipboard.setStringAsync(inviteCode);
 
       if (Platform.OS === 'web') {
         alert(t.urlCopied || 'Invite code copied to clipboard!');

@@ -356,19 +356,16 @@ export const getTitles = async (user_id: string) => {
 
 export const getStoryByInviteCode = async (code: string) => {
   try {
-    // Get the story gist using the story ID as the invite code
-    const { data, error } = await supabase
-      .from('story_gists')
-      .select('*')
-      .eq('id', code)
-      .single();
-
-    if (error) {
-      console.error('Error getting story by invite code:', error);
-      return null;
+    const { success, story } = await fetch(`${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/invite?code=${code}`, {
+      headers: {
+        'from_app': 'true'
+      }
+    })
+      .then(res => res.json());
+    if (!success) {
+      throw new Error('Invalid invite code');
     }
-
-    return data;
+    return story;
   } catch (error) {
     console.error('Error in getStoryByInviteCode:', error);
     return null;
@@ -394,7 +391,7 @@ export const addInvitedStory = async ({ gist_id, user_id }: { gist_id: string, u
       age_range: data.age_range,
       length: data.length,
       mood: data.mood,
-      story_id: data.story_id,  
+      story_id: data.story_id,
       invited: true
     })
     .select('id')
@@ -416,7 +413,7 @@ export const removeGist = async (gist_id: string) => {
     .from('story_gists')
     .delete()
     .eq('id', gist_id)
-  
+
   if (error) {
     console.error('Error removing story gist:', error);
     throw error;
