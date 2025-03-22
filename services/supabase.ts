@@ -167,7 +167,6 @@ export const deleteStory = async (story_id: string) => {
     .select('image')
     .single();
 
-  console.log('gistData', gistData);
   if (error) {
     console.error('Error deleting story:', error);
     throw error;
@@ -241,6 +240,7 @@ export const getStoryByInviteCode = async (code: string) => {
 };
 
 export const addInvitedStory = async ({ gist_id, user_id }: { gist_id: string, user_id: string }) => {
+  console.log("User ID on invite", user_id)
   const { data, error } = await supabase
     .from('story_gists')
     .update({ inviting: true })

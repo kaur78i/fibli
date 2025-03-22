@@ -1,13 +1,14 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Animated, Platform } from 'react-native';
-import { Mic, Send, Sparkles, Star as Stars } from 'lucide-react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity } from 'react-native';
+import { Send, Sparkles, Star as Stars } from 'lucide-react-native';
 import * as Animatable from 'react-native-animatable';
 import { useLanguage } from '@/context/LanguageContext';
 import { useUserPreferences } from '@/context/UserPreferencesContext';
 import { useTheme } from '@/context/ThemeContext';
-import * as SecureStore from 'expo-secure-store';
 import { suggestTitles } from '@/services/openai';
 import { useFocusEffect } from '@react-navigation/native';
+import { getUserId } from '@/services/getUserId';
+
 type InputTitleProps = {
   onSubmit: (title: string) => void;
 };
@@ -20,7 +21,6 @@ export default function InputTitle({ onSubmit }: InputTitleProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [suggestedTitles, setSuggestedTitles] = useState<string[]>([]);
   const [user_id, setUserId] = useState<string>('');
-  const micScale = useRef(new Animated.Value(1)).current;
   const inputRef = useRef<TextInput>(null);
 
   const handleSubmit = () => {
@@ -30,21 +30,8 @@ export default function InputTitle({ onSubmit }: InputTitleProps) {
   };
 
   useEffect(() => {
-    const fetchUserId = async () => {
-      if (Platform.OS === 'web') {
-        const user_id = localStorage.getItem('user_id');
-        if (user_id) {
-          setUserId(user_id);
-        }
-      } else {
-        const user_id = await SecureStore.getItemAsync('user_id');
-        if (user_id) {
-          setUserId(user_id);
-        }
-      }
-    };
-    fetchUserId();
-  }, [user_id]);
+    getUserId(setUserId);
+  }, []);
 
   useFocusEffect(useCallback(() => {
     const fetchSuggestedTitles = async () => {
@@ -57,28 +44,6 @@ export default function InputTitle({ onSubmit }: InputTitleProps) {
     };
     fetchSuggestedTitles();
   }, [user_id]));
-
-  const handleSpeechInput = () => {
-    // Trigger animation
-    Animated.sequence([
-      Animated.timing(micScale, {
-        toValue: 1.3,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-      Animated.timing(micScale, {
-        toValue: 1,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-    ]).start();
-
-    // Mock speech recognition - in a real app, this would use speech recognition
-    // For now, we'll just set a placeholder title
-    setTimeout(() => {
-      setTitle('The Dragon and the Knight');
-    }, 600);
-  };
 
   const focusInput = () => {
     inputRef.current?.focus();
@@ -291,18 +256,6 @@ const styles = StyleSheet.create({
   buttonsContainer: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-  },
-  micButton: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 4,
-    shadowColor: '#5e17eb',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
   },
   submitButton: {
     width: 60,

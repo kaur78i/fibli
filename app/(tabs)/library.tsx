@@ -9,8 +9,8 @@ import { useLanguage } from '@/context/LanguageContext';
 import { useTheme } from '@/context/ThemeContext';
 import { TStoryGist } from '@/types';
 import { getGists, deleteStory, getStoryByInviteCode, addInvitedStory } from '@/services/supabase';
-import SecureStore from 'expo-secure-store';
 import * as Clipboard from 'expo-clipboard';
+import { getUserId } from '@/services/getUserId';
 
 export default function LibraryScreen() {
   const { t, getLocaleForSpeech } = useLanguage();
@@ -31,14 +31,7 @@ export default function LibraryScreen() {
   }, [gists.length]);
 
   useEffect(() => {
-    const getUserId = async () => {
-      if (Platform.OS === 'web') {
-        setUserId(localStorage.getItem('user_id'));
-      } else {
-        setUserId(await SecureStore.getItemAsync('user_id'));
-      }
-    };
-    getUserId();
+    getUserId(setUserId);
   }, []);
 
   useFocusEffect(
