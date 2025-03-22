@@ -148,8 +148,6 @@ export default function NewStoryScreen() {
         chapters,
         user_id: user_id!,
       });
-      console.log('chapters', chapters);
-      console.log('story', story);
       router.push(`/story/${story.id}`);
     } catch (error) {
       console.error('Error generating story:', error);

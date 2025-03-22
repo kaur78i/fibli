@@ -83,7 +83,7 @@ export default function StorySettings({ title, initialSettings, onSubmit }: Stor
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <View style={styles.container}>
       <Animatable.View 
         animation="fadeIn" 
         duration={800}
@@ -364,7 +364,7 @@ export default function StorySettings({ title, initialSettings, onSubmit }: Stor
           </LinearGradient>
         </TouchableOpacity>
       </Animatable.View>
-    </ScrollView>
+    </View>
   );
 }
 

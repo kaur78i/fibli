@@ -126,7 +126,7 @@ export default function GistView({
   }
 
   return (
-    <ScrollView style={styles.container}>
+    <View style={styles.container}>
       <Animatable.View
         animation="fadeIn"
         duration={1000}
@@ -291,7 +291,7 @@ export default function GistView({
           </TouchableOpacity>
         </View>
       </Animatable.View>
-    </ScrollView>
+    </View>
   );
 }
 
