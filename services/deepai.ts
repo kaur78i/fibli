@@ -21,14 +21,12 @@ export const generateImage = async (prompt: string): Promise<Uint8Array> => {
       },
     );
 
-    console.log("response.status", response.status)
     if (response.status === 200) {
       return new Uint8Array(response.data);
     } else {
       throw new Error(`${response.status}: ${response.data.toString()}`);
     }
   } catch (error) {
-    console.error("image error", error)
     throw error;
   }
 }

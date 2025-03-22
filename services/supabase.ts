@@ -1,10 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { TStory, TStoryGist, TChapter } from '@/types';
-import 'react-native-get-random-values';
-import { v4 as uuidv4 } from 'uuid';
-import base64 from 'base64-js';
-
 // Initialize the Supabase client
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
@@ -24,17 +20,11 @@ const supabase = createClient(supabaseUrl, supabaseKey, {
 
 export const downloadAndSaveImage = async (imageBuffer: Uint8Array, fileName: string) => {
   try {
-    // Convert Uint8Array to base64 string using base64-js
-    const base64String = base64.fromByteArray(imageBuffer);
-    // Create a fetch-compatible Blob from base64
-    const response = await fetch(`data:image/webp;base64,${base64String}`);
-    console.log("response", response)
-    const blob = await response.blob();
-    // Upload Blob to Supabase
+    // Upload Uint8Array directly to Supabase
     const { data, error } = await supabase.storage
       .from('images')
-      .upload(`${fileName}`, blob, {
-        contentType: 'image/png',
+      .upload(fileName, imageBuffer, {
+        contentType: 'image/webp', // Change this to match your image type
         upsert: true
       });
 
@@ -51,81 +41,6 @@ export const downloadAndSaveImage = async (imageBuffer: Uint8Array, fileName: st
   } catch (error) {
     console.error('Error processing image:', error);
     throw error;
-  }
-};
-
-// Function to update image URLs in database tables
-const updateImageUrlInDatabase = async (temporaryUrl: string, permanentUrl: string): Promise<void> => {
-  try {
-    // 1. First, check and update story_gists table
-    const { data: gistData, error: gistError } = await supabase
-      .from('story_gists')
-      .update({ image: permanentUrl })
-      .eq('image', temporaryUrl)
-      .select('id');
-
-    if (gistError) {
-      console.error('Error updating story_gists:', gistError);
-    } else if (gistData && gistData.length > 0) {
-      console.log('Updated image URL in story_gists for IDs:', gistData.map(item => item.id).join(', '));
-    }
-
-    // 2. Next, check and update the stories table
-    const { data: storiesData, error: storiesError } = await supabase
-      .from('stories')
-      .update({ image: permanentUrl })
-      .eq('image', temporaryUrl)
-      .select('id');
-
-    if (storiesError) {
-      console.error('Error updating stories:', storiesError);
-    } else if (storiesData && storiesData.length > 0) {
-      console.log('Updated image URL in stories for IDs:', storiesData.map(item => item.id).join(', '));
-    }
-
-    // 3. Finally, update chapter images in stories table (most complex case)
-    // Fetch all stories
-    const { data: allStories, error: fetchError } = await supabase
-      .from('stories')
-      .select('id, chapters');
-
-    if (fetchError) {
-      console.error('Error fetching stories for chapter image update:', fetchError);
-      return;
-    }
-
-    // Check each story for chapters with the temporary URL
-    const storiesToUpdate = allStories?.filter(story => {
-      if (!story.chapters || !Array.isArray(story.chapters)) return false;
-      return story.chapters.some(chapter => chapter.image === temporaryUrl);
-    });
-
-    if (storiesToUpdate && storiesToUpdate.length > 0) {
-      // Process each story that needs updating
-      await Promise.all(storiesToUpdate.map(async (story) => {
-        // Update chapters with the temporary URL
-        const updatedChapters = story.chapters.map((chapter: TChapter) => {
-          if (chapter.image === temporaryUrl) {
-            return { ...chapter, image: permanentUrl };
-          }
-          return chapter;
-        });
-
-        // Update the story with the modified chapters
-        const { error: updateError } = await supabase
-          .from('stories')
-          .update({ chapters: updatedChapters })
-          .eq('id', story.id);
-
-        if (updateError) {
-          console.error(`Error updating chapters for story ${story.id}:`, updateError);
-        } else {
-          console.log(`Updated chapter images for story ${story.id}`);
-        }
-      }));
-    }
-  } catch (error) {
-    console.error('Error in updateImageUrlInDatabase:', error);
   }
 };
 
