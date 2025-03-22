@@ -54,54 +54,6 @@ export const downloadAndSaveImage = async (imageBuffer: Uint8Array, fileName: st
   }
 };
 
-// Background download function with retry logic
-const downloadImageInBackground = async (imageUrl: string, fileName: string, retryCount = 0, maxRetries = 3): Promise<void> => {
-  try {
-    // First fetch the image using fetch API instead of axios
-    const response = await fetch(imageUrl);
-    const blob = await response.blob();
-    console.log('blob size:', blob.size);
-
-    // Upload to Supabase storage
-    const { data, error } = await supabase.storage
-      .from('images')
-      .upload(`${fileName}`, blob, {
-        contentType: 'image/png',
-        upsert: true
-      });
-
-    if (error) {
-      console.error('Error uploading image to storage in background:', error);
-      throw error; // Throw to trigger retry mechanism
-    }
-
-    // Get the public URL for the uploaded image
-    const { data: publicUrlData } = supabase.storage
-      .from('images')
-      .getPublicUrl(data.path);
-
-    const permanentUrl = publicUrlData.publicUrl;
-
-    // Update the database records with the permanent URL
-    await updateImageUrlInDatabase(imageUrl, permanentUrl);
-
-  } catch (error) {
-    console.error(`Error in background image processing (attempt ${retryCount + 1}/${maxRetries + 1}):`, error);
-
-    // Implement retry with exponential backoff
-    if (retryCount < maxRetries) {
-      const backoffTime = Math.pow(2, retryCount) * 1000; // Exponential backoff: 1s, 2s, 4s
-      console.log(`Retrying download in ${backoffTime}ms...`);
-
-      setTimeout(() => {
-        downloadImageInBackground(imageUrl, fileName, retryCount + 1, maxRetries);
-      }, backoffTime);
-    } else {
-      console.error(`Failed to download image after ${maxRetries + 1} attempts:`, imageUrl);
-    }
-  }
-};
-
 // Function to update image URLs in database tables
 const updateImageUrlInDatabase = async (temporaryUrl: string, permanentUrl: string): Promise<void> => {
   try {
