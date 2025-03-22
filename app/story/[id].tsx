@@ -65,9 +65,12 @@ export default function StoryScreen() {
     }
     foundStory();
 
-    // Cleanup function to stop any speech when component unmounts
+    // Cleanup function to stop any speech and reset state when component unmounts
     return () => {
       const cleanup = async () => {
+        setIsSpeaking(false);
+        setIsPaused(false);
+        setReadingProgress(0);
         if (Platform.OS !== 'web' && await Speech.isSpeakingAsync()) {
           Speech.stop();
         }
