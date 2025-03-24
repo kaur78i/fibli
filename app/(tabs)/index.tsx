@@ -15,7 +15,7 @@ import * as Animatable from 'react-native-animatable';
 import { saveStoryGist, saveStory, removeGist } from '@/services/supabase';
 import { TStoryGist } from '@/types';
 import { getUserId } from '@/services/getUserId';
-import { getPurchaseState, PurchaseState } from '@/services/purchase';
+import { getPurchaseState } from '@/services/purchase';
 import PurchaseModal from '@/components/PurchaseModal';
 
 type AppState = 'input' | 'settings' | 'gist';

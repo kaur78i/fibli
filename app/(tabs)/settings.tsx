@@ -178,7 +178,7 @@ export default function SettingsScreen() {
               <View style={styles.themeIconContainer}>
                 <Sun size={20} color={colors.text} />
               </View>
-              <Text style={[styles.themeLabel, { color: colors.text }]}>Light Mode</Text>
+              <Text style={[styles.themeLabel, { color: colors.text }]}>{t.lightMode}</Text>
               {theme === 'light' && (
                 <Animatable.View animation="bounceIn" style={[styles.checkmark, { backgroundColor: colors.primary }]}>
                   <Text style={[styles.checkmarkText, { color: colors.background }]}>✓</Text>
@@ -200,7 +200,7 @@ export default function SettingsScreen() {
               <View style={styles.themeIconContainer}>
                 <Moon size={20} color={colors.text} />
               </View>
-              <Text style={[styles.themeLabel, { color: colors.text }]}>Dark Mode</Text>
+              <Text style={[styles.themeLabel, { color: colors.text }]}>{t.darkMode}</Text>
               {theme === 'dark' && (
                 <Animatable.View animation="bounceIn" style={[styles.checkmark, { backgroundColor: colors.primary }]}>
                   <Text style={[styles.checkmarkText, { color: colors.background }]}>✓</Text>
@@ -222,7 +222,7 @@ export default function SettingsScreen() {
               <View style={styles.themeIconContainer}>
                 <Star size={20} color={colors.text} />
               </View>
-              <Text style={[styles.themeLabel, { color: colors.text }]}>System Default</Text>
+              <Text style={[styles.themeLabel, { color: colors.text }]}>{t.systemDefault}</Text>
               {theme === 'system' && (
                 <Animatable.View animation="bounceIn" style={[styles.checkmark, { backgroundColor: colors.primary }]}>
                   <Text style={[styles.checkmarkText, { color: colors.background }]}>✓</Text>
@@ -300,7 +300,7 @@ export default function SettingsScreen() {
         >
           <View style={[styles.sectionHeader, { backgroundColor: colors.cardBorder }]}>
             <Star size={20} color={colors.primary} />
-            <Text style={[styles.sectionTitle, { color: colors.text }]}>Upgrade to Pro</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>{t.upgradeToPro}</Text>
           </View>
           <View style={styles.sectionContent}>
             <TouchableOpacity
@@ -322,18 +322,18 @@ export default function SettingsScreen() {
               <View style={styles.purchaseHeader}>
                 <View>
                   <View style={styles.subscriptionBadge}>
-                    <Text style={styles.subscriptionBadgeText}>BEST VALUE</Text>
+                    <Text style={styles.subscriptionBadgeText}>{t.bestValue}</Text>
                   </View>
-                  <Text style={[styles.purchaseTitle, { color: colors.text, marginTop: 24 }]}>Monthly Unlimited</Text>
+                  <Text style={[styles.purchaseTitle, { color: colors.text, marginTop: 24 }]}>{t.monthlyUnlimited}</Text>
                 </View>
                 {isPurchasesLoading ? (
                   <ActivityIndicator size="small" color={colors.primary} />
                 ) : (
                   <>
                     {purchases.unlimited ? (
-                      <Text style={[styles.purchasedText, { color: colors.primary }]}>Active</Text>
+                      <Text style={[styles.purchasedText, { color: colors.primary }]}>{t.active}</Text>
                     ) : (
-                      <Text style={[styles.purchasePrice, { color: colors.primary }]}>$14.99/month</Text>
+                      <Text style={[styles.purchasePrice, { color: colors.primary }]}>{t.monthlyPrice}</Text>
                     )}
                   </>
                 )}
@@ -343,10 +343,7 @@ export default function SettingsScreen() {
                 { color: colors.secondaryText },
                 purchases.unlimited && styles.purchasedDescription
               ]}>
-                • Unlimited premium stories{'\n'}
-                • Priority support{'\n'}
-                • Access to all premium features{'\n'}
-                • Cancel anytime
+                {t.monthlyUnlimitedDescription}
               </Text>
             </TouchableOpacity>
 
@@ -366,13 +363,13 @@ export default function SettingsScreen() {
               onPress={() => handlePurchase('uses20')}
             >
               <View style={styles.purchaseHeader}>
-                <Text style={[styles.purchaseTitle, { color: colors.text }]}>20 Uses Package</Text>
+                <Text style={[styles.purchaseTitle, { color: colors.text }]}>{t.twentyUsesPackage}</Text>
                 {isPurchasesLoading ? (
                   <ActivityIndicator size="small" color={colors.primary} />
                 ) : (
                   <>
                     {purchases.uses20 ? (
-                      <Text style={[styles.purchasedText, { color: colors.primary }]}>Purchased</Text>
+                      <Text style={[styles.purchasedText, { color: colors.primary }]}>{t.active}</Text>
                     ) : (
                       <Text style={[styles.purchasePrice, { color: colors.primary }]}>$6.99</Text>
                     )}
@@ -384,9 +381,7 @@ export default function SettingsScreen() {
                 { color: colors.secondaryText },
                 purchases.uses20 && styles.purchasedDescription
               ]}>
-                • Get 20 premium stories{'\n'}
-                • No monthly commitment{'\n'}
-                • Access to all premium features
+                {t.twentyUsesPackageDescription}
               </Text>
             </TouchableOpacity>
           </View>

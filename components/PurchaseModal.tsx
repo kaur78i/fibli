@@ -12,6 +12,7 @@ import * as Animatable from 'react-native-animatable';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '@/context/ThemeContext';
 import { Star } from 'lucide-react-native';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface PurchaseOption {
 	id: string;
@@ -57,6 +58,7 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
 	onClose,
 }) => {
 	const { colors } = useTheme();
+	const { t } = useLanguage();
 	const [selectedOption, setSelectedOption] = useState<string | null>(null);
 	const [isPurchasesLoading, setIsPurchasesLoading] = useState(false);
 	const [isPurchasing, setIsPurchasing] = useState(false);
@@ -117,10 +119,10 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
 						style={styles.headerGradient}
 					>
 						<Animatable.Text animation="bounceIn" duration={1200} style={styles.title}>
-							Choose Your Plan
+							{t.chooseYourPlan}
 						</Animatable.Text>
 						<Animatable.View animation="fadeIn" delay={400}>
-							<Text style={styles.subtitle}>Select the perfect plan for you</Text>
+							<Text style={styles.subtitle}>{t.selectThePerfectPlanForYou}</Text>
 						</Animatable.View>
 					</LinearGradient>
 
@@ -147,7 +149,7 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
 								>
 									{option.type === 'subscription' && (
 										<View style={[styles.bestValueBadge, { backgroundColor: colors.primary }]}>
-											<Text style={styles.bestValueText}>BEST VALUE</Text>
+											<Text style={styles.bestValueText}>{t.bestValue}</Text>
 										</View>
 									)}
 									<Text style={[styles.optionTitle, { color: colors.text }]}>{option.title}</Text>
@@ -157,7 +159,7 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
 									</Text>
 									{option.type === 'subscription' && (
 										<Text style={[styles.periodLabel, { color: colors.secondaryText }]}>
-											{option.period === 'monthly' ? 'Monthly billing' : 'Annual billing'}
+											{option.period === 'monthly' ? t.monthlyBilling : t.annualBilling}
 										</Text>
 									)}
 									{selectedOption === option.id && (
@@ -180,7 +182,7 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
 							onPress={onClose}
 							disabled={isPurchasing}
 						>
-							<Text style={[styles.buttonText, { color: colors.text }]}>Cancel</Text>
+							<Text style={[styles.buttonText, { color: colors.text }]}>{t.cancel}</Text>
 						</TouchableOpacity>
 						<TouchableOpacity
 							style={[
@@ -192,7 +194,7 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
 							onPress={handlePurchase}
 						>
 							<Text style={[styles.buttonText, { color: '#fff' }]}>
-								{isPurchasing ? 'Processing...' : 'Purchase'}
+								{isPurchasing ? t.processing : t.purchase}
 							</Text>
 						</TouchableOpacity>
 					</View>

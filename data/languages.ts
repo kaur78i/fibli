@@ -34,12 +34,12 @@ const translations = {
     thisScreenDoesNotExist: 'This screen doesn\'t exist.',
     goToHomeScreen: 'Go to home screen!',
     yourFavorites: 'Your Favorites:',
-    
+
     // Tabs
     newStory: 'New Story',
     myLibrary: 'My Library',
     settings: 'Settings',
-    
+
     // Story Creation
     createNewStory: 'Create a New Story',
     enterTitle: 'Enter a story title...',
@@ -73,13 +73,13 @@ const translations = {
     educational: 'Educational',
     calming: 'Calming',
     magical: 'Magical',
-    
+
     // Library
     librarySubtitle: 'Your personal collection of bedtime stories',
     emptyLibrary: 'Your library is empty. Create your first story!',
     chapters: 'chapters',
     min: 'min',
-    
+
     // Story Reader
     chapter: 'Chapter',
     of: 'of',
@@ -92,7 +92,7 @@ const translations = {
     reset: 'Reset',
     startReading: 'Start Reading',
     stopReading: 'Stop Reading',
-    
+
     // Settings
     appSettings: 'App Settings',
     language: 'Language',
@@ -113,8 +113,24 @@ const translations = {
     lightMode: 'Light Mode',
     systemDefault: 'System Default',
     support: 'Support & Help',
+    upgradeToPro: 'Upgrade to Pro',
+    bestValue: 'BEST VALUE',
+    monthlyUnlimited: 'Monthly Unlimited',
+    active: 'Active',
+    monthlyPrice: '$14.99/month',
+    monthlyUnlimitedDescription: '• Unlimited premium stories\n• Priority support\n• Access to all premium features\n• Cancel anytime',
+    twentyUsesPackage: '20 Uses Package',
+    twentyUsesPackageDescription: '• Get 20 premium stories\n• No monthly commitment\n• Access to all premium features',
+
+    // Purchase Modal
+    chooseYourPlan: 'Choose Your Plan',
+    selectThePerfectPlanForYou: 'Select the perfect plan for you',
+    monthlyBilling: 'Monthly billing',
+    annualBilling: 'Annual billing',
+    processing: 'Processing...',
+    purchase: 'Purchase',
   },
-  
+
   es: {
     // Common
     save: 'Guardar',
@@ -136,7 +152,7 @@ const translations = {
     newStory: 'Nueva Historia',
     myLibrary: 'Mi Biblioteca',
     settings: 'Ajustes',
-    
+
     // Story Creation
     createNewStory: 'Crear una Nueva Historia',
     enterTitle: 'Introduce un título para la historia...',
@@ -170,13 +186,13 @@ const translations = {
     educational: 'Educativo',
     calming: 'Relajante',
     magical: 'Mágico',
-    
+
     // Library
     librarySubtitle: 'Tu colección personal de cuentos para dormir',
     emptyLibrary: '¡Tu biblioteca está vacía. Crea tu primera historia!',
     chapters: 'capítulos',
     min: 'min',
-    
+
     // Story Reader
     chapter: 'Capítulo',
     of: 'de',
@@ -189,7 +205,7 @@ const translations = {
     reset: 'Reiniciar',
     startReading: 'Comenzar Lectura',
     stopReading: 'Detener Lectura',
-    
+
     // Settings
     appSettings: 'Ajustes de la aplicación',
     language: 'Idioma',
@@ -210,8 +226,24 @@ const translations = {
     lightMode: 'Modo claro',
     systemDefault: 'Predeterminado del sistema',
     support: 'Soporte & Ayuda',
+    upgradeToPro: 'Actualizar a Pro',
+    bestValue: 'MEJOR VALOR',
+    monthlyUnlimited: 'Ilimitado Mensual',
+    active: 'Activo',
+    monthlyPrice: '$14.99/month',
+    monthlyUnlimitedDescription: '• Historias premium ilimitadas\n• Soporte prioritario\n• Acceso a todas las características premium\n• Cancelar en cualquier momento',
+    twentyUsesPackage: 'Paquete de 20 Usos',
+    twentyUsesPackageDescription: '• Obtén 20 historias premium\n• Sin compromiso mensual\n• Acceso a todas las características premium',
+
+    // Purchase Modal
+    chooseYourPlan: 'Elige tu plan',
+    selectThePerfectPlanForYou: 'Selecciona el plan perfecto para ti',
+    monthlyBilling: 'Mensual',
+    annualBilling: 'Anual',
+    processing: 'Procesando...',
+    purchase: 'Comprar',
   },
-  
+
   fr: {
     // Common
     save: 'Enregistrer',
@@ -228,12 +260,12 @@ const translations = {
     thisScreenDoesNotExist: 'Cette écran n\'existe pas.',
     goToHomeScreen: 'Retour à l\'accueil!',
     yourFavorites: 'Vos Favoris:',
-    
+
     // Tabs
     newStory: 'Nouvelle Histoire',
     myLibrary: 'Ma Bibliothèque',
     settings: 'Paramètres',
-    
+
     // Story Creation
     createNewStory: 'Créer une Nouvelle Histoire',
     enterTitle: 'Entrez un titre d\'histoire...',
@@ -267,13 +299,13 @@ const translations = {
     educational: 'Éducative',
     calming: 'Apaisante',
     magical: 'Magique',
-    
+
     // Library
     librarySubtitle: 'Votre collection personnelle d\'histoires pour le coucher',
     emptyLibrary: 'Votre bibliothèque est vide. Créez votre première histoire !',
     chapters: 'chapitres',
     min: 'min',
-    
+
     // Story Reader
     chapter: 'Chapitre',
     of: 'sur',
@@ -286,7 +318,7 @@ const translations = {
     reset: 'Réinitialiser',
     startReading: 'Commencer la Lecture',
     stopReading: 'Arrêter la Lecture',
-    
+
     // Settings
     appSettings: 'Paramètres de l\'application',
     language: 'Langue',
@@ -307,8 +339,24 @@ const translations = {
     lightMode: 'Mode clair',
     systemDefault: 'Paramètres système',
     support: 'Support & Aide',
+    upgradeToPro: 'Passer à Pro',
+    bestValue: 'MEILLEUR VALEUR',
+    monthlyUnlimited: 'Ilimité Mensuel',
+    active: 'Actif',
+    monthlyPrice: '$14.99/month',
+    monthlyUnlimitedDescription: '• Histoires premium illimitées\n• Support prioritaire\n• Accès à toutes les fonctionnalités premium\n• Annuler à tout moment',
+    twentyUsesPackage: 'Paquete de 20 Usos',
+    twentyUsesPackageDescription: '• Obtén 20 historias premium\n• Sin compromiso mensual\n• Acceso a todas las características premium',
+
+    // Purchase Modal
+    chooseYourPlan: 'Choisissez votre plan',
+    selectThePerfectPlanForYou: 'Sélectionnez le plan parfait pour vous',
+    monthlyBilling: 'Mensuel',
+    annualBilling: 'Annuel',
+    processing: 'Traitement...',
+    purchase: 'Acheter',
   },
-  
+
   de: {
     // Common
     save: 'Speichern',
@@ -325,12 +373,12 @@ const translations = {
     thisScreenDoesNotExist: 'Diese Seite existiert nicht.',
     goToHomeScreen: 'Zur Startseite!',
     yourFavorites: 'Ihre Lieblingsgeschichten:',
-    
+
     // Tabs
     newStory: 'Neue Geschichte',
     myLibrary: 'Meine Bibliothek',
     settings: 'Einstellungen',
-    
+
     // Story Creation
     createNewStory: 'Neue Geschichte erstellen',
     enterTitle: 'Geben Sie einen Titel ein...',
@@ -365,13 +413,13 @@ const translations = {
     educational: 'Lehrreich',
     calming: 'Beruhigend',
     magical: 'Magisch',
-    
+
     // Library
     librarySubtitle: 'Ihre persönliche Sammlung von Geschichten',
     emptyLibrary: 'Ihre Bibliothek ist leer. Erstellen Sie Ihre erste Geschichte!',
     chapters: 'Kapitel',
     min: 'Min',
-    
+
     // Story Reader
     chapter: 'Kapitel',
     of: 'von',
@@ -384,7 +432,7 @@ const translations = {
     reset: 'Zurücksetzen',
     startReading: 'Vorlesen starten',
     stopReading: 'Vorlesen stoppen',
-    
+
     // Settings
     appSettings: 'App-Einstellungen',
     language: 'Sprache',
@@ -405,8 +453,24 @@ const translations = {
     lightMode: 'Hellmodus',
     systemDefault: 'Systemeinstellung',
     support: 'Support & Hilfe',
+    upgradeToPro: 'Upgrade auf Pro',
+    bestValue: 'BEST VALUE',
+    monthlyUnlimited: 'Monatlich Unbegrenzt',
+    active: 'Aktiv',
+    monthlyPrice: '$14.99/month',
+    monthlyUnlimitedDescription: '• Premium-Geschichten unbegrenzt\n• Prioritärer Support\n• Zugang zu allen Premium-Funktionen\n• Jederzeit stornierbar',
+    twentyUsesPackage: '20 Uses Package',
+    twentyUsesPackageDescription: '• Get 20 premium stories\n• No monthly commitment\n• Access to all premium features',
+
+    // Purchase Modal
+    chooseYourPlan: 'Wählen Sie Ihren Plan',
+    selectThePerfectPlanForYou: 'Wählen Sie den perfekten Plan für Sie',
+    monthlyBilling: 'Monatlich',
+    annualBilling: 'Jährlich',
+    processing: 'Verarbeitung...',
+    purchase: 'Kaufen',
   },
-  
+
   it: {
     // Common
     save: 'Salva',
@@ -428,7 +492,7 @@ const translations = {
     newStory: 'Nuova Storia',
     myLibrary: 'La Mia Libreria',
     settings: 'Impostazioni',
-    
+
     // Story Creation
     createNewStory: 'Crea una Nuova Storia',
     enterTitle: 'Inserisci un titolo per la storia...',
@@ -463,13 +527,13 @@ const translations = {
     educational: 'Educativo',
     calming: 'Calmante',
     magical: 'Magico',
-    
+
     // Library
     librarySubtitle: 'La tua collezione personale di storie della buonanotte',
     emptyLibrary: 'La tua libreria è vuota. Crea la tua prima storia!',
     chapters: 'capitoli',
     min: 'min',
-    
+
     // Story Reader
     chapter: 'Capitolo',
     of: 'di',
@@ -482,7 +546,7 @@ const translations = {
     reset: 'Reimposta',
     startReading: 'Inizia Lettura',
     stopReading: 'Ferma Lettura',
-    
+
     // Settings
     appSettings: 'Impostazioni dell\'app',
     language: 'Lingua',
@@ -503,8 +567,24 @@ const translations = {
     lightMode: 'Modalità chiara',
     systemDefault: 'Predefinito di sistema',
     support: 'Supporto & Assistenza',
+    upgradeToPro: 'Passa a Pro',
+    bestValue: 'VALORE OTTIMO',
+    monthlyUnlimited: 'Mensile Illimitato',
+    active: 'Attivo',
+    monthlyPrice: '$14.99/month',
+    monthlyUnlimitedDescription: '• Storie premium illimitate\n• Supporto prioritario\n• Accesso a tutte le funzionalità premium\n• Annullare in qualsiasi momento',
+    twentyUsesPackage: 'Paquete de 20 Usos',
+    twentyUsesPackageDescription: '• Obtén 20 historias premium\n• Sin compromiso mensual\n• Acceso a todas las características premium',
+
+    // Purchase Modal
+    chooseYourPlan: 'Scegli il tuo piano',
+    selectThePerfectPlanForYou: 'Seleziona il piano perfetto per te',
+    monthlyBilling: 'Mensile',
+    annualBilling: 'Annuale',
+    processing: 'Elaborazione...',
+    purchase: 'Acquista',
   },
-  
+
   pt: {
     // Common
     save: 'Salvar',
@@ -527,7 +607,7 @@ const translations = {
     newStory: 'Nova História',
     myLibrary: 'Minha Biblioteca',
     settings: 'Configurações',
-    
+
     // Story Creation
     createNewStory: 'Criar uma Nova História',
     enterTitle: 'Digite um título para a história...',
@@ -561,13 +641,13 @@ const translations = {
     educational: 'Educativo',
     calming: 'Calmante',
     magical: 'Mágico',
-    
+
     // Library
     librarySubtitle: 'Sua coleção pessoal de histórias para dormir',
     emptyLibrary: 'Sua biblioteca está vazia. Crie sua primeira história!',
     chapters: 'capítulos',
     min: 'min',
-    
+
     // Story Reader
     chapter: 'Capítulo',
     of: 'de',
@@ -580,7 +660,7 @@ const translations = {
     reset: 'Reiniciar',
     startReading: 'Iniciar Leitura',
     stopReading: 'Parar Leitura',
-    
+
     // Settings
     appSettings: 'Configurações do aplicativo',
     language: 'Idioma',
@@ -601,6 +681,22 @@ const translations = {
     lightMode: 'Modo claro',
     systemDefault: 'Padrão do sistema',
     support: 'Suporte & Ajuda',
+    upgradeToPro: 'Atualizar para Pro',
+    bestValue: 'VALOR OTIMO',
+    monthlyUnlimited: 'Mensal Ilimitado',
+    active: 'Ativo',
+    monthlyPrice: '$14.99/month',
+    monthlyUnlimitedDescription: '• Histórias premium ilimitadas\n• Suporte prioritário\n• Acesso a todas as funcionalidades premium\n• Cancelar em qualquer momento',
+    twentyUsesPackage: 'Paquete de 20 Usos',
+    twentyUsesPackageDescription: '• Obtén 20 historias premium\n• Sin compromiso mensual\n• Acceso a todas las características premium',
+
+    // Purchase Modal
+    chooseYourPlan: 'Escolha seu plano',
+    selectThePerfectPlanForYou: 'Selecione o plano perfeito para você',
+    monthlyBilling: 'Mensal',
+    annualBilling: 'Anual',
+    processing: 'Processando...',
+    purchase: 'Comprar',
   },
 };
 
@@ -618,6 +714,6 @@ export const getSpeechLocale = (langCode: string): string => {
     it: 'it-IT',
     pt: 'pt-PT',
   };
-  
+
   return speechLocales[langCode] || 'en-US';
 };
