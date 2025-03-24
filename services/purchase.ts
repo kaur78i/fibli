@@ -1,4 +1,4 @@
-import {
+  import {
   initConnection,
   endConnection,
   finishTransaction,
@@ -25,13 +25,13 @@ export const ONE_TIME_PURCHASES = {
   TWENTY_USES: 'com.fibli.iap.twentyuse',
 } as const;
 
-interface SubscriptionStatus {
+export interface SubscriptionStatus {
   isSubscribed: boolean;
   expiryDate?: number;
   latestReceipt?: string;
 }
 
-interface PurchaseState {
+export interface PurchaseState {
   freeGenerations: number;
   purchasedUses: number;
   isSubscribed: boolean;
@@ -97,7 +97,13 @@ export async function initializePurchases() {
 }
 
 async function handleSubscriptionPurchase(purchase: any) {
-  await SecureStore.setItemAsync(PURCHASED_UNLIMITED_KEY, 'true');
+  if (isWeb) return;
+  const status = await getSubscriptionStatus();
+  if (status.isSubscribed && status.expiryDate && status.expiryDate > Date.now()) {
+    await SecureStore.setItemAsync(PURCHASED_UNLIMITED_KEY, 'true');
+  } else {
+    await SecureStore.setItemAsync(PURCHASED_UNLIMITED_KEY, 'false');
+  }
 }
 
 async function handleOneTimePurchase(purchase: any) {

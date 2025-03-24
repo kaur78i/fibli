@@ -15,6 +15,8 @@ import * as Animatable from 'react-native-animatable';
 import { saveStoryGist, saveStory, removeGist } from '@/services/supabase';
 import { TStoryGist } from '@/types';
 import { getUserId } from '@/services/getUserId';
+import { getPurchaseState, PurchaseState } from '@/services/purchase';
+import PurchaseModal from '@/components/PurchaseModal';
 
 type AppState = 'input' | 'settings' | 'gist';
 
@@ -29,15 +31,21 @@ export default function NewStoryScreen() {
   const [isStoryGenerating, setIsStoryGenerating] = useState(false);
   const [settings, setSettings] = useState<StorySettingsType>(preferences.lastUsedStorySettings);
   const [user_id, setUserId] = useState<string | null>(null);
+  const [purchaseModalVisible, setPurchaseModalVisible] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
     getUserId(setUserId);
   }, []);
 
-  const handleTitleSubmit = (submittedTitle: string) => {
+  const handleTitleSubmit = async (submittedTitle: string) => {
     setTitle(submittedTitle);
-    setState('settings');
+    const purchaseState = await getPurchaseState();
+    if (purchaseState?.isSubscribed || purchaseState!.freeGenerations! < 3 || purchaseState!.purchasedUses! < 20) {
+      setState('settings');
+    } else {
+      setPurchaseModalVisible(true);
+    }
   };
 
   const handleSettingsSubmit = async (storySettings: StorySettingsType) => {
@@ -205,6 +213,10 @@ export default function NewStoryScreen() {
           )}
         </ScrollView>
       </KeyboardAvoidingView>
+      <PurchaseModal 
+        visible={purchaseModalVisible}
+        onClose={() => setPurchaseModalVisible(false)}
+      />
     </SafeAreaView>
   );
 }
