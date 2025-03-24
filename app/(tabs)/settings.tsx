@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, ScrollView, Platform, Alert, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, ScrollView, Platform, Alert, ActivityIndicator, Linking } from 'react-native';
 import { ChevronRight, Globe, Moon, Sun, Volume2, Sparkles, Star, Lightbulb } from 'lucide-react-native';
 import * as Animatable from 'react-native-animatable';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -413,12 +413,26 @@ export default function SettingsScreen() {
               </View>
             </TouchableOpacity>
 
-            <TouchableOpacity style={[styles.aboutItem, { backgroundColor: colors.background }]}>
+            <TouchableOpacity 
+              style={[styles.aboutItem, { backgroundColor: colors.background }]}
+              onPress={() => Linking.openURL('https://fibli.app/privacy')}
+            >
               <Text style={[styles.aboutLabel, { color: colors.text }]}>{t.privacyPolicy}</Text>
               <ChevronRight size={18} color={colors.secondaryText} />
             </TouchableOpacity>
 
-            <TouchableOpacity style={[styles.aboutItem, { backgroundColor: colors.background }]}>
+            <TouchableOpacity 
+              style={[styles.aboutItem, { backgroundColor: colors.background }]}
+              onPress={() => Linking.openURL('https://fibli.app/support')}
+            >
+              <Text style={[styles.aboutLabel, { color: colors.text }]}>{t.support}</Text>
+              <ChevronRight size={18} color={colors.secondaryText} />
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[styles.aboutItem, { backgroundColor: colors.background }]}
+              onPress={() => Linking.openURL('https://fibli.app/terms')}
+            >
               <Text style={[styles.aboutLabel, { color: colors.text }]}>{t.termsOfService}</Text>
               <ChevronRight size={18} color={colors.secondaryText} />
             </TouchableOpacity>

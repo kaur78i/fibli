@@ -1,19 +1,28 @@
 {
   "expo": {
+    "name": "fibli",
+    "slug": "fibli",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "userInterfaceStyle": "automatic",
     "plugins": [
       "expo-router",
       "expo-secure-store",
       "react-native-iap"
     ],
-    "extra": {
-      "eas": {
-        "projectId": "e3b1a734-d64a-4cf4-ab7a-bb49a4e7f2c7"
-      }
-    },
     "ios": {
       "bundleIdentifier": "com.spgdev.fibli",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "f963af27-64c1-4e3c-a052-03851558443c"
       }
     }
   }

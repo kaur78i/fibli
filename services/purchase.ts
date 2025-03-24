@@ -18,11 +18,11 @@ import { Platform } from 'react-native';
 
 // Product IDs
 export const SUBSCRIPTION_SKUS = {
-  MONTHLY: 'com.fibli.subscription.monthly',
+  MONTHLY: 'com.fibli.subscription.monthlyunlimited',
 } as const;
 
 export const ONE_TIME_PURCHASES = {
-  TWENTY_USES: 'com.fibli.iap.twentyuse',
+  TWENTY_USES: 'com.fibli.iap.twentyusagenerations',
 } as const;
 
 export interface SubscriptionStatus {

@@ -112,6 +112,7 @@ const translations = {
     darkMode: 'Dark Mode',
     lightMode: 'Light Mode',
     systemDefault: 'System Default',
+    support: 'Support & Help',
   },
   
   es: {
@@ -208,6 +209,7 @@ const translations = {
     darkMode: 'Modo oscuro',
     lightMode: 'Modo claro',
     systemDefault: 'Predeterminado del sistema',
+    support: 'Soporte & Ayuda',
   },
   
   fr: {
@@ -304,6 +306,7 @@ const translations = {
     darkMode: 'Mode sombre',
     lightMode: 'Mode clair',
     systemDefault: 'Paramètres système',
+    support: 'Support & Aide',
   },
   
   de: {
@@ -401,6 +404,7 @@ const translations = {
     darkMode: 'Dunkelmodus',
     lightMode: 'Hellmodus',
     systemDefault: 'Systemeinstellung',
+    support: 'Support & Hilfe',
   },
   
   it: {
@@ -498,6 +502,7 @@ const translations = {
     darkMode: 'Modalità scura',
     lightMode: 'Modalità chiara',
     systemDefault: 'Predefinito di sistema',
+    support: 'Supporto & Assistenza',
   },
   
   pt: {
@@ -595,6 +600,7 @@ const translations = {
     darkMode: 'Modo escuro',
     lightMode: 'Modo claro',
     systemDefault: 'Padrão do sistema',
+    support: 'Suporte & Ajuda',
   },
 };
 

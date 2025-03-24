@@ -105,10 +105,6 @@ export default function NewStoryScreen() {
     }
   };
 
-  useEffect(() => {
-    setPurchaseModalVisible(true);
-  }, []);
-
   const handleStartGeneration = async () => {
     try {
       setIsStoryGenerating(true);
