@@ -307,46 +307,6 @@ export default function SettingsScreen() {
               style={[
                 styles.purchaseItem,
                 { backgroundColor: colors.background },
-                purchases.uses20 && styles.purchasedItem,
-                purchases.uses20 && {
-                  shadowColor: '#FFD700',
-                  shadowOffset: { width: 0, height: 0 },
-                  shadowOpacity: 0.5,
-                  shadowRadius: 8,
-                  elevation: 8,
-                }
-              ]}
-              onPress={() => handlePurchase('uses20')}
-            >
-              <View style={styles.purchaseHeader}>
-                <Text style={[styles.purchaseTitle, { color: colors.text }]}>20 Uses Package</Text>
-                {isPurchasesLoading ? (
-                  <ActivityIndicator size="small" color={colors.primary} />
-                ) : (
-                  <>
-                    {purchases.uses20 ? (
-                      <Text style={[styles.purchasedText, { color: colors.primary }]}>Purchased</Text>
-                    ) : (
-                      <Text style={[styles.purchasePrice, { color: colors.primary }]}>$6.99</Text>
-                    )}
-                  </>
-                )}
-              </View>
-              <Text style={[
-                styles.purchaseDescription,
-                { color: colors.secondaryText },
-                purchases.uses20 && styles.purchasedDescription
-              ]}>
-                • Get 20 premium stories{'\n'}
-                • No monthly commitment{'\n'}
-                • Access to all premium features
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[
-                styles.purchaseItem,
-                { backgroundColor: colors.background },
                 purchases.unlimited && styles.purchasedItem,
                 purchases.unlimited && {
                   shadowColor: '#FFD700',
@@ -387,6 +347,46 @@ export default function SettingsScreen() {
                 • Priority support{'\n'}
                 • Access to all premium features{'\n'}
                 • Cancel anytime
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.purchaseItem,
+                { backgroundColor: colors.background },
+                purchases.uses20 && styles.purchasedItem,
+                purchases.uses20 && {
+                  shadowColor: '#FFD700',
+                  shadowOffset: { width: 0, height: 0 },
+                  shadowOpacity: 0.5,
+                  shadowRadius: 8,
+                  elevation: 8,
+                }
+              ]}
+              onPress={() => handlePurchase('uses20')}
+            >
+              <View style={styles.purchaseHeader}>
+                <Text style={[styles.purchaseTitle, { color: colors.text }]}>20 Uses Package</Text>
+                {isPurchasesLoading ? (
+                  <ActivityIndicator size="small" color={colors.primary} />
+                ) : (
+                  <>
+                    {purchases.uses20 ? (
+                      <Text style={[styles.purchasedText, { color: colors.primary }]}>Purchased</Text>
+                    ) : (
+                      <Text style={[styles.purchasePrice, { color: colors.primary }]}>$6.99</Text>
+                    )}
+                  </>
+                )}
+              </View>
+              <Text style={[
+                styles.purchaseDescription,
+                { color: colors.secondaryText },
+                purchases.uses20 && styles.purchasedDescription
+              ]}>
+                • Get 20 premium stories{'\n'}
+                • No monthly commitment{'\n'}
+                • Access to all premium features
               </Text>
             </TouchableOpacity>
           </View>

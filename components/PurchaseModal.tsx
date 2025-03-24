@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
 	Modal,
 	View,
@@ -7,7 +7,12 @@ import {
 	TouchableOpacity,
 	ScrollView,
 } from 'react-native';
-import { purchaseOneTimeProduct, purchaseSubscription, SUBSCRIPTION_SKUS, ONE_TIME_PURCHASES } from '@/services/purchase';
+import { purchaseOneTimeProduct, purchaseSubscription, SUBSCRIPTION_SKUS, ONE_TIME_PURCHASES, getPurchaseState } from '@/services/purchase';
+import * as Animatable from 'react-native-animatable';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useTheme } from '@/context/ThemeContext';
+import { Star } from 'lucide-react-native';
+
 interface PurchaseOption {
 	id: string;
 	title: string;
@@ -25,16 +30,6 @@ interface PurchaseModalProps {
 
 const purchaseOptions: PurchaseOption[] = [
 	{
-		id: 'premium',
-		title: 'Premium Access',
-		price: '$6.99',
-		description: 'One-time purchase for 20 uses',
-		type: 'oneTime',
-		onPurchase: () => {
-			purchaseOneTimeProduct(ONE_TIME_PURCHASES.TWENTY_USES);
-		},
-	},
-	{
 		id: 'monthly',
 		title: 'Monthly Plan',
 		price: '$14.99/month',
@@ -45,75 +40,163 @@ const purchaseOptions: PurchaseOption[] = [
 			purchaseSubscription(SUBSCRIPTION_SKUS.MONTHLY);
 		},
 	},
+	{
+		id: 'premium',
+		title: 'Premium Access',
+		price: '$6.99',
+		description: 'One-time purchase for 20 uses',
+		type: 'oneTime',
+		onPurchase: () => {
+			purchaseOneTimeProduct(ONE_TIME_PURCHASES.TWENTY_USES);
+		},
+	},
 ];
 
 const PurchaseModal: React.FC<PurchaseModalProps> = ({
 	visible,
 	onClose,
 }) => {
+	const { colors } = useTheme();
 	const [selectedOption, setSelectedOption] = useState<string | null>(null);
+	const [isPurchasesLoading, setIsPurchasesLoading] = useState(false);
+	const [isPurchasing, setIsPurchasing] = useState(false);
+	const [error, setError] = useState<string | null>(null);
+	const [purchases, setPurchases] = useState({
+		oneTime: false,
+		subscription: false,
+	});
+
+	useEffect(() => {
+		const fetchPurchases = async () => {
+			setIsPurchasesLoading(true);
+			const purchases = await getPurchaseState();
+			setPurchases({
+				oneTime: purchases.purchasedUses >= 20,
+				subscription: purchases.isSubscribed,
+			});
+			setIsPurchasesLoading(false);
+		};
+		fetchPurchases();
+	}, []);
+
+	const handlePurchase = async () => {
+		const selected = purchaseOptions.find(
+			(option) => option.id === selectedOption
+		);
+		if (selected) {
+			setError(null);
+			setIsPurchasing(true);
+			try {
+				await selected.onPurchase();
+				onClose();
+			} catch (err) {
+				setError('Purchase failed. Please try again.');
+			} finally {
+				setIsPurchasing(false);
+			}
+		}
+	};
 
 	return (
 		<Modal
 			visible={visible}
-			animationType="slide"
+			animationType="fade"
 			transparent={true}
 			onRequestClose={onClose}
 		>
 			<View style={styles.modalContainer}>
-				<View style={styles.modalContent}>
-					<Text style={styles.title}>Choose Your Plan</Text>
+				<Animatable.View
+					animation="fadeInUp"
+					duration={300}
+					style={[styles.modalContent, { backgroundColor: colors.card }]}
+				>
+					<LinearGradient
+						colors={[colors.gradientStart, colors.gradientEnd]}
+						start={{ x: 0, y: 0 }}
+						end={{ x: 1, y: 1 }}
+						style={styles.headerGradient}
+					>
+						<Animatable.Text animation="bounceIn" duration={1200} style={styles.title}>
+							Choose Your Plan
+						</Animatable.Text>
+						<Animatable.View animation="fadeIn" delay={400}>
+							<Text style={styles.subtitle}>Select the perfect plan for you</Text>
+						</Animatable.View>
+					</LinearGradient>
 
 					<ScrollView style={styles.optionsContainer}>
-						{purchaseOptions.map((option) => (
-							<TouchableOpacity
+						{purchaseOptions.map((option, index) => (
+							<Animatable.View
 								key={option.id}
-								style={[
-									styles.optionCard,
-									selectedOption === option.id && styles.selectedCard,
-								]}
-								onPress={() => setSelectedOption(option.id)}
+								animation="fadeInRight"
+								duration={500}
+								delay={index * 100}
 							>
-								<Text style={styles.optionTitle}>{option.title}</Text>
-								<Text style={styles.optionPrice}>{option.price}</Text>
-								<Text style={styles.optionDescription}>
-									{option.description}
-								</Text>
-								{option.type === 'subscription' && (
-									<Text style={styles.periodLabel}>
-										{option.period === 'monthly' ? 'Monthly billing' : 'Annual billing'}
+								<TouchableOpacity
+									style={[
+										styles.optionCard,
+										{ backgroundColor: colors.background },
+										selectedOption === option.id && {
+											borderColor: colors.primary,
+											borderWidth: 2,
+											backgroundColor: colors.card
+										}
+									]}
+									onPress={() => setSelectedOption(option.id)}
+									disabled={isPurchasesLoading || purchases[option.type]}
+								>
+									{option.type === 'subscription' && (
+										<View style={[styles.bestValueBadge, { backgroundColor: colors.primary }]}>
+											<Text style={styles.bestValueText}>BEST VALUE</Text>
+										</View>
+									)}
+									<Text style={[styles.optionTitle, { color: colors.text }]}>{option.title}</Text>
+									<Text style={[styles.optionPrice, { color: colors.primary }]}>{option.price}</Text>
+									<Text style={[styles.optionDescription, { color: colors.secondaryText }]}>
+										{option.description}
 									</Text>
-								)}
-							</TouchableOpacity>
+									{option.type === 'subscription' && (
+										<Text style={[styles.periodLabel, { color: colors.secondaryText }]}>
+											{option.period === 'monthly' ? 'Monthly billing' : 'Annual billing'}
+										</Text>
+									)}
+									{selectedOption === option.id && (
+										<Animatable.View animation="bounceIn" style={styles.checkmark}>
+											<Star size={20} color={colors.primary} fill={colors.primary} />
+										</Animatable.View>
+									)}
+								</TouchableOpacity>
+							</Animatable.View>
 						))}
 					</ScrollView>
 
+					{error && (
+						<Text style={[styles.errorText, { color: colors.text }]}>{error}</Text>
+					)}
+
 					<View style={styles.buttonContainer}>
 						<TouchableOpacity
-							style={styles.cancelButton}
+							style={[styles.cancelButton, { borderColor: colors.cardBorder }]}
 							onPress={onClose}
+							disabled={isPurchasing}
 						>
-							<Text style={styles.buttonText}>Cancel</Text>
+							<Text style={[styles.buttonText, { color: colors.text }]}>Cancel</Text>
 						</TouchableOpacity>
 						<TouchableOpacity
 							style={[
 								styles.purchaseButton,
-								!selectedOption && styles.disabledButton,
+								{ backgroundColor: colors.primary },
+								(!selectedOption || isPurchasing) && styles.disabledButton
 							]}
-							disabled={!selectedOption}
-							onPress={() => {
-								const selected = purchaseOptions.find(
-									(option) => option.id === selectedOption
-								);
-								if (selected) {
-									selected.onPurchase();
-								}
-							}}
+							disabled={!selectedOption || isPurchasing}
+							onPress={handlePurchase}
 						>
-							<Text style={styles.buttonText}>Purchase</Text>
+							<Text style={[styles.buttonText, { color: '#fff' }]}>
+								{isPurchasing ? 'Processing...' : 'Purchase'}
+							</Text>
 						</TouchableOpacity>
 					</View>
-				</View>
+				</Animatable.View>
 			</View>
 		</Modal>
 	);
@@ -127,77 +210,127 @@ const styles = StyleSheet.create({
 		backgroundColor: 'rgba(0, 0, 0, 0.5)',
 	},
 	modalContent: {
-		backgroundColor: 'white',
-		borderRadius: 20,
-		padding: 20,
 		width: '90%',
 		maxHeight: '80%',
+		borderRadius: 20,
+		overflow: 'hidden',
+		elevation: 8,
+		shadowColor: '#000',
+		shadowOffset: { width: 0, height: 4 },
+		shadowOpacity: 0.3,
+		shadowRadius: 8,
+	},
+	headerGradient: {
+		padding: 20,
+		borderTopLeftRadius: 20,
+		borderTopRightRadius: 20,
 	},
 	title: {
 		fontSize: 24,
-		fontWeight: 'bold',
+		fontFamily: 'LuckiestGuy-Regular',
+		color: '#fff',
 		textAlign: 'center',
-		marginBottom: 20,
+		marginBottom: 8,
+		textShadowColor: 'rgba(0, 0, 0, 0.2)',
+		textShadowOffset: { width: 1, height: 1 },
+		textShadowRadius: 3,
+	},
+	subtitle: {
+		fontSize: 16,
+		fontFamily: 'Inter-Regular',
+		color: 'rgba(255, 255, 255, 0.9)',
+		textAlign: 'center',
 	},
 	optionsContainer: {
+		padding: 16,
 		maxHeight: 400,
 	},
 	optionCard: {
+		borderRadius: 12,
+		padding: 16,
+		marginBottom: 12,
 		borderWidth: 1,
-		borderColor: '#ddd',
-		borderRadius: 10,
-		padding: 15,
-		marginBottom: 10,
+		borderColor: 'transparent',
+		elevation: 2,
+		shadowColor: '#000',
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.1,
+		shadowRadius: 4,
+		position: 'relative',
 	},
-	selectedCard: {
-		borderColor: '#007AFF',
-		backgroundColor: '#F0F8FF',
+	bestValueBadge: {
+		position: 'absolute',
+		top: -12,
+		right: 12,
+		paddingHorizontal: 8,
+		paddingVertical: 4,
+		borderRadius: 4,
+	},
+	bestValueText: {
+		color: '#fff',
+		fontSize: 12,
+		fontFamily: 'Inter-Bold',
 	},
 	optionTitle: {
 		fontSize: 18,
-		fontWeight: 'bold',
-		marginBottom: 5,
+		fontFamily: 'Inter-SemiBold',
+		marginBottom: 8,
 	},
 	optionPrice: {
 		fontSize: 24,
-		color: '#007AFF',
-		marginBottom: 5,
+		fontFamily: 'Inter-Bold',
+		marginBottom: 8,
 	},
 	optionDescription: {
-		color: '#666',
-		marginBottom: 5,
+		fontSize: 14,
+		fontFamily: 'Inter-Regular',
+		lineHeight: 20,
+		marginBottom: 8,
 	},
 	periodLabel: {
-		color: '#888',
 		fontSize: 12,
+		fontFamily: 'Inter-Regular',
+	},
+	checkmark: {
+		position: 'absolute',
+		top: 16,
+		right: 16,
 	},
 	buttonContainer: {
 		flexDirection: 'row',
-		justifyContent: 'space-between',
-		marginTop: 20,
+		padding: 16,
+		gap: 12,
 	},
 	cancelButton: {
-		backgroundColor: '#FF3B30',
-		padding: 15,
-		borderRadius: 10,
 		flex: 1,
-		marginRight: 10,
+		padding: 16,
+		borderRadius: 16,
+		borderWidth: 1,
+		alignItems: 'center',
 	},
 	purchaseButton: {
-		backgroundColor: '#007AFF',
-		padding: 15,
-		borderRadius: 10,
 		flex: 1,
-		marginLeft: 10,
+		padding: 16,
+		borderRadius: 16,
+		alignItems: 'center',
+		elevation: 4,
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.2,
+		shadowRadius: 4,
 	},
 	disabledButton: {
-		backgroundColor: '#ccc',
+		opacity: 0.5,
 	},
 	buttonText: {
-		color: 'white',
-		textAlign: 'center',
 		fontSize: 16,
-		fontWeight: 'bold',
+		fontFamily: 'Inter-Bold',
+	},
+	errorText: {
+		textAlign: 'center',
+		marginHorizontal: 16,
+		marginBottom: 8,
+		fontSize: 14,
+		fontFamily: 'Inter-Regular',
 	},
 });
 
