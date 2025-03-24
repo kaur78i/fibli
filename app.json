@@ -24,6 +24,13 @@
       "eas": {
         "projectId": "f963af27-64c1-4e3c-a052-03851558443c"
       }
+    },
+    "android": {
+      "package": "com.spgdev.fibli",
+      "minSdkVersion": 21,
+      "compileSdkVersion": 33,
+      "targetSdkVersion": 33,
+      "buildToolsVersion": "33.0.0"
     }
   }
 }
