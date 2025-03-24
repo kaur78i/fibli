@@ -26,7 +26,6 @@ Deno.serve(async (req) => {
   const code = fullCode?.includes('http') 
     ? new URL(fullCode).searchParams.get('code')
     : fullCode;
-  const from_app = req.headers.get('from_app');
 
   console.log('code', code)
   
@@ -36,17 +35,6 @@ Deno.serve(async (req) => {
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, Authorization, Content-Type, from_app',
   };
-
-  if (!from_app) {
-    return new Response(null, {
-      status: 302,
-      headers: {
-        ...corsHeaders,
-        "Location": Deno.env.get('APP_STORE_URL'),
-        "Content-Type": "application/json"
-      }
-    });
-  }
   
   // Get Supabase client - moved the import to the top of the file
   const supabaseClient = Deno.env.get('SUPABASE_URL') 

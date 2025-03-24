@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, ScrollView, Platform, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, SafeAreaView, TouchableOpacity, ScrollView, Platform, Alert, ActivityIndicator } from 'react-native';
 import { ChevronRight, Globe, Moon, Sun, Volume2, Sparkles, Star, Lightbulb } from 'lucide-react-native';
 import * as Animatable from 'react-native-animatable';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -8,13 +8,15 @@ import { useLanguage } from '@/context/LanguageContext';
 import { useUserPreferences } from '@/context/UserPreferencesContext';
 import { useTheme } from '@/context/ThemeContext';
 import Slider from '@/components/Slider';
-// import { purchaseOneTimeProduct, purchaseSubscription, ONE_TIME_PURCHASES, SUBSCRIPTION_SKUS } from '@/services/purchase';
+import { ONE_TIME_PURCHASES, purchaseOneTimeProduct, SUBSCRIPTION_SKUS, purchaseSubscription, getPurchaseState } from '@/services/purchase';
+
 export default function SettingsScreen() {
   const { language, setLanguage, t } = useLanguage();
   const { preferences, updateSpeechSettings } = useUserPreferences();
   const { theme, setTheme, colors, currentTheme } = useTheme();
   const [speechRate, setSpeechRate] = useState(preferences.speechSettings.rate);
   const [speechPitch, setSpeechPitch] = useState(preferences.speechSettings.pitch);
+  const [isPurchasesLoading, setIsPurchasesLoading] = useState(true);
   const [purchases, setPurchases] = useState({
     uses20: false,
     unlimited: false,
@@ -48,9 +50,9 @@ export default function SettingsScreen() {
     try {
       if (purchases[type]) return;
       if (type === 'uses20') {
-        // purchaseOneTimeProduct(ONE_TIME_PURCHASES.TWENTY_USES);
+        purchaseOneTimeProduct(ONE_TIME_PURCHASES.TWENTY_USES);
       } else {
-        // purchaseSubscription(SUBSCRIPTION_SKUS.MONTHLY);
+        purchaseSubscription(SUBSCRIPTION_SKUS.MONTHLY);
       }
       setPurchases(prev => ({
         ...prev,
@@ -65,6 +67,19 @@ export default function SettingsScreen() {
       }
     }
   };
+
+  useEffect(() => {
+    const fetchPurchases = async () => {
+      setIsPurchasesLoading(true);
+      const purchases = await getPurchaseState();
+      setPurchases({
+        uses20: purchases.purchasedUses >= 20,
+        unlimited: purchases.isSubscribed,
+      });
+      setIsPurchasesLoading(false);
+    };
+    fetchPurchases();
+  }, []);
 
   const renderLanguageItem = (lang: { code: string, name: string, nativeName: string }) => {
     const isSelected = lang.code === language;
@@ -305,10 +320,16 @@ export default function SettingsScreen() {
             >
               <View style={styles.purchaseHeader}>
                 <Text style={[styles.purchaseTitle, { color: colors.text }]}>20 Uses Package</Text>
-                {purchases.uses20 ? (
-                  <Text style={[styles.purchasedText, { color: colors.primary }]}>Purchased</Text>
+                {isPurchasesLoading ? (
+                  <ActivityIndicator size="small" color={colors.primary} />
                 ) : (
-                  <Text style={[styles.purchasePrice, { color: colors.primary }]}>$6.99</Text>
+                  <>
+                    {purchases.uses20 ? (
+                      <Text style={[styles.purchasedText, { color: colors.primary }]}>Purchased</Text>
+                    ) : (
+                      <Text style={[styles.purchasePrice, { color: colors.primary }]}>$6.99</Text>
+                    )}
+                  </>
                 )}
               </View>
               <Text style={[
@@ -345,10 +366,16 @@ export default function SettingsScreen() {
                   </View>
                   <Text style={[styles.purchaseTitle, { color: colors.text, marginTop: 24 }]}>Monthly Unlimited</Text>
                 </View>
-                {purchases.unlimited ? (
-                  <Text style={[styles.purchasedText, { color: colors.primary }]}>Active</Text>
+                {isPurchasesLoading ? (
+                  <ActivityIndicator size="small" color={colors.primary} />
                 ) : (
-                  <Text style={[styles.purchasePrice, { color: colors.primary }]}>$14.99/month</Text>
+                  <>
+                    {purchases.unlimited ? (
+                      <Text style={[styles.purchasedText, { color: colors.primary }]}>Active</Text>
+                    ) : (
+                      <Text style={[styles.purchasePrice, { color: colors.primary }]}>$14.99/month</Text>
+                    )}
+                  </>
                 )}
               </View>
               <Text style={[
@@ -579,12 +606,15 @@ const styles = StyleSheet.create({
   purchaseHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-end',
+    alignItems: 'flex-start',
     marginBottom: 12,
+    flexWrap: 'wrap',
   },
   purchaseTitle: {
     fontSize: 18,
     fontFamily: 'Inter-SemiBold',
+    flexShrink: 1,
+    marginRight: 8,
   },
   purchasePrice: {
     fontSize: 20,
@@ -594,6 +624,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontFamily: 'Inter-Regular',
     lineHeight: 22,
+    flexWrap: 'wrap',
   },
   subscriptionBadge: {
     position: 'absolute',

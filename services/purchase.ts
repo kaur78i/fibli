@@ -13,7 +13,7 @@
   Subscription,
   Product
 } from 'react-native-iap';
-import SecureStore from 'expo-secure-store';
+import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 
 // Product IDs
