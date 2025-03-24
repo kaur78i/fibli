@@ -6,6 +6,9 @@ import {
 	StyleSheet,
 	TouchableOpacity,
 	ScrollView,
+	Platform,
+	Alert,
+	ActivityIndicator,
 } from 'react-native';
 import { purchaseOneTimeProduct, purchaseSubscription, SUBSCRIPTION_SKUS, ONE_TIME_PURCHASES, getPurchaseState } from '@/services/purchase';
 import * as Animatable from 'react-native-animatable';
@@ -21,7 +24,7 @@ interface PurchaseOption {
 	description: string;
 	type: 'oneTime' | 'subscription';
 	period?: string; // for subscriptions only
-	onPurchase: () => void;
+	onPurchase: () => Promise<boolean>;
 }
 
 interface PurchaseModalProps {
@@ -37,8 +40,8 @@ const purchaseOptions: PurchaseOption[] = [
 		description: 'Full access with monthly billing',
 		type: 'subscription',
 		period: 'monthly',
-		onPurchase: () => {
-			purchaseSubscription(SUBSCRIPTION_SKUS.MONTHLY);
+		onPurchase: async () => {
+			return await purchaseSubscription(SUBSCRIPTION_SKUS.MONTHLY);
 		},
 	},
 	{
@@ -47,8 +50,8 @@ const purchaseOptions: PurchaseOption[] = [
 		price: '$6.99',
 		description: 'One-time purchase for 20 uses',
 		type: 'oneTime',
-		onPurchase: () => {
-			purchaseOneTimeProduct(ONE_TIME_PURCHASES.TWENTY_USES);
+		onPurchase: async () => {
+			return await purchaseOneTimeProduct(ONE_TIME_PURCHASES.TWENTY_USES);
 		},
 	},
 ];
@@ -82,6 +85,7 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
 	}, []);
 
 	const handlePurchase = async () => {
+		let success = false;
 		const selected = purchaseOptions.find(
 			(option) => option.id === selectedOption
 		);
@@ -89,10 +93,27 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
 			setError(null);
 			setIsPurchasing(true);
 			try {
-				await selected.onPurchase();
-				onClose();
-			} catch (err) {
-				setError('Purchase failed. Please try again.');
+				success = await selected.onPurchase();
+				if (success) {
+					setPurchases(prev => ({
+						...prev,
+						[selected.type]: true
+					}));
+					if (Platform.OS === 'web') {
+						alert(t.purchaseSuccess);
+					} else {
+						Alert.alert(t.success, t.purchaseSuccess);
+					}
+					onClose();
+				} else {
+					throw new Error(t.purchaseFailed);
+				}
+			} catch (err: any) {
+				if (Platform.OS === 'web') {
+					alert(t.purchaseFailed + ': ' + err.message);
+				} else {
+					Alert.alert(t.error, t.purchaseFailed + ': ' + err.message);
+				}
 			} finally {
 				setIsPurchasing(false);
 			}
@@ -194,7 +215,14 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
 							onPress={handlePurchase}
 						>
 							<Text style={[styles.buttonText, { color: '#fff' }]}>
-								{isPurchasing ? t.processing : t.purchase}
+								{isPurchasing ? (
+									<>
+										{t.processing}
+										<ActivityIndicator size="small" color="#fff" />
+									</>
+								) : (
+									t.purchase
+								)}
 							</Text>
 						</TouchableOpacity>
 					</View>

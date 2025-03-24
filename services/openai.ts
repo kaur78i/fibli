@@ -47,8 +47,8 @@ export const generateStoryGist = async ({
           role: 'system',
           content: `
 You are an expert children's storyteller specializing in creating engaging, age-appropriate bedtime stories.
-Your language should be ${language} and story style should follow the ${language} culture.
-Image prompt should be in english.
+Your language should be ${language} and story style should follow the ${language} culture in the story preview and the story chapters.
+All image prompts MUST be in English regardless of the story language.
 
 # STORY PARAMETERS
 - Title: "${title}"
@@ -182,7 +182,7 @@ export const generateStory = async ({
           content: `
 You are an expert children's storyteller specializing in creating engaging, age-appropriate bedtime stories.
 You should write a complete story based on the provided gist, maintaining consistent character descriptions and narrative style throughout all chapters.
-Your language should be ${language} but image prompt should be in english.
+All image prompts MUST be in English regardless of the story language.
 
 # GIVEN INPUT
 ${JSON.stringify(gist, null, 2)}

@@ -47,23 +47,27 @@ export default function SettingsScreen() {
   };
 
   const handlePurchase = async (type: 'uses20' | 'unlimited') => {
+    let success = false;
     try {
       if (purchases[type]) return;
       if (type === 'uses20') {
-        purchaseOneTimeProduct(ONE_TIME_PURCHASES.TWENTY_USES);
+        success = await purchaseOneTimeProduct(ONE_TIME_PURCHASES.TWENTY_USES);
       } else {
-        purchaseSubscription(SUBSCRIPTION_SKUS.MONTHLY);
+        success = await purchaseSubscription(SUBSCRIPTION_SKUS.MONTHLY);
+      }
+      if (!success) {
+        throw new Error('Purchase failed');
       }
       setPurchases(prev => ({
         ...prev,
-        [type]: true
+        [type]: success
       }));
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error purchasing:', error);
       if (Platform.OS === 'web') {
-        alert('An error occurred while purchasing. Please try again.');
+        alert(t.error + ': ' + error.message);
       } else {
-        Alert.alert('Error', 'An error occurred while purchasing. Please try again.');
+        Alert.alert(t.error, t.purchaseFailed + ': ' + error.message);
       }
     }
   };

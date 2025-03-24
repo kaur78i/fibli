@@ -73,7 +73,8 @@ const translations = {
     educational: 'Educational',
     calming: 'Calming',
     magical: 'Magical',
-
+    purchaseFailed: 'Purchase failed',
+    purchaseSuccess: 'Purchase successful',
     // Library
     librarySubtitle: 'Your personal collection of bedtime stories',
     emptyLibrary: 'Your library is empty. Create your first story!',
@@ -186,6 +187,8 @@ const translations = {
     educational: 'Educativo',
     calming: 'Relajante',
     magical: 'Mágico',
+    purchaseFailed: 'Error al comprar',
+    purchaseSuccess: 'Compra realizada con éxito',
 
     // Library
     librarySubtitle: 'Tu colección personal de cuentos para dormir',
@@ -299,7 +302,8 @@ const translations = {
     educational: 'Éducative',
     calming: 'Apaisante',
     magical: 'Magique',
-
+    purchaseFailed: 'Erreur lors de la commande',
+    purchaseSuccess: 'Commande réussie',
     // Library
     librarySubtitle: 'Votre collection personnelle d\'histoires pour le coucher',
     emptyLibrary: 'Votre bibliothèque est vide. Créez votre première histoire !',
@@ -413,7 +417,9 @@ const translations = {
     educational: 'Lehrreich',
     calming: 'Beruhigend',
     magical: 'Magisch',
-
+    purchaseFailed: 'Fehler beim Kaufen',
+    purchaseSuccess: 'Kauf erfolgreich',
+    
     // Library
     librarySubtitle: 'Ihre persönliche Sammlung von Geschichten',
     emptyLibrary: 'Ihre Bibliothek ist leer. Erstellen Sie Ihre erste Geschichte!',
@@ -527,6 +533,8 @@ const translations = {
     educational: 'Educativo',
     calming: 'Calmante',
     magical: 'Magico',
+    purchaseFailed: 'Errore durante il pagamento',
+    purchaseSuccess: 'Pagamento riuscito',
 
     // Library
     librarySubtitle: 'La tua collezione personale di storie della buonanotte',
@@ -641,6 +649,8 @@ const translations = {
     educational: 'Educativo',
     calming: 'Calmante',
     magical: 'Mágico',
+    purchaseFailed: 'Erro ao comprar',
+    purchaseSuccess: 'Compra realizada com sucesso',
 
     // Library
     librarySubtitle: 'Sua coleção pessoal de histórias para dormir',

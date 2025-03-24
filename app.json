@@ -11,7 +11,9 @@
       "expo-secure-store",
       "react-native-iap"
     ],
+    "scheme": "fibli",
     "ios": {
+      "associatedDomains": ["applinks:fibli.app"],
       "bundleIdentifier": "com.spgdev.fibli",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
