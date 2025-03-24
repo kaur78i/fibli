@@ -148,7 +148,7 @@ export default function InputTitle({ onSubmit }: InputTitleProps) {
                   style={[styles.exampleChip, { backgroundColor: colors.primaryLight }]}
                   onPress={() => setTitle(example)}
                 >
-                  <Text style={[styles.exampleText, { color: colors.primary }]}>{example}</Text>
+                  <Text style={[styles.exampleText, { color: 'white' }]}>{example}</Text>
                 </TouchableOpacity>
               </Animatable.View>
             ))
@@ -175,7 +175,7 @@ export default function InputTitle({ onSubmit }: InputTitleProps) {
                   style={[styles.exampleChip, styles.favoriteChip]}
                   onPress={() => setTitle(theme)}
                 >
-                  <Text style={styles.exampleText}>{theme}</Text>
+                  <Text style={[styles.exampleText, { color: colors.text }]}>{theme}</Text>
                 </TouchableOpacity>
               </Animatable.View>
             ))}

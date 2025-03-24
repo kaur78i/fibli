@@ -27,38 +27,38 @@ type ThemeContextType = {
 };
 
 const lightColors = {
-  background: '#ffffff',
-  text: '#333333',
-  secondaryText: '#666666',
-  card: '#f9f9f9',
-  cardBorder: '#f0f0f0',
-  primary: '#5e17eb',
-  primaryLight: '#e0d1ff',
-  accent: '#ff3b30',
-  tabBar: '#ffffff',
-  tabBarInactive: '#888888',
-  navBar: '#f0e5ff',
-  gradientStart: '#5e17eb',
-  gradientEnd: '#7c3aed',
-  divider: '#f0f0f0',
+  background: '#f8f9fc', // 230 25% 98%
+  text: '#2e3138', // 240 10% 20%
+  secondaryText: '#767983', // 240 5% 50%
+  card: '#ffffff', // 0 0% 100%
+  cardBorder: '#e5e7eb', // 240 6% 90%
+  primary: '#9747c4', // 276 57% 60%
+  primaryLight: '#b990e2', // 262 57% 75%
+  accent: '#b990e2', // 262 57% 75%
+  tabBar: '#fafafa', // 0 0% 98%
+  tabBarInactive: '#3e4149', // 240 5.3% 26.1%
+  navBar: '#f7f7f8', // 240 4.8% 95.9%
+  gradientStart: '#9747c4', // primary
+  gradientEnd: '#b990e2', // accent
+  divider: '#e5e7eb', // border
   modalBackground: 'rgba(0, 0, 0, 0.5)',
 };
 
 const darkColors = {
-  background: '#121212',
-  text: '#e0e0e0',
-  secondaryText: '#a0a0a0',
-  card: '#1e1e1e',
-  cardBorder: '#333333',
-  primary: '#9b74ff',
-  primaryLight: '#332560',
-  accent: '#ff6961',
-  tabBar: '#1c1c1e',
-  tabBarInactive: '#7a7a7c',
-  navBar: '#27124e',
-  gradientStart: '#7c3aed',
-  gradientEnd: '#5e17eb',
-  divider: '#333333',
+  background: '#0a0a0c', // 240 10% 4%
+  text: '#fafafa', // 0 0% 98%
+  secondaryText: '#b3b3b3', // 240 5% 70%
+  card: '#0a0a0c', // 240 10% 4%
+  cardBorder: '#27272a', // 240 3.7% 15.9%
+  primary: '#b990e2', // 262 57% 65%
+  primaryLight: '#b990e2', // keeping accent color for consistency
+  accent: '#b990e2', // 262 57% 65%
+  tabBar: '#0a0a0c', // matches background
+  tabBarInactive: '#27272a', // 240 3.7% 15.9%
+  navBar: '#27272a', // secondary color
+  gradientStart: '#b990e2', // primary
+  gradientEnd: '#9747c4', // darker variant
+  divider: '#27272a', // 240 3.7% 15.9%
   modalBackground: 'rgba(0, 0, 0, 0.7)',
 };
 
