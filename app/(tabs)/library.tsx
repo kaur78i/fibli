@@ -126,7 +126,7 @@ export default function LibraryScreen() {
 
   const handleShare = async (gistId: string) => {
     try {
-      const inviteUrl = `https://fibli.app/share/${gistId}`;
+      const inviteUrl = `https://fibli.app/story/${gistId}`;
       await Clipboard.setStringAsync(inviteUrl);
 
       if (Platform.OS === 'web') {
