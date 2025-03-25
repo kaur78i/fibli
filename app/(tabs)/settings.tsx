@@ -8,7 +8,9 @@ import { useLanguage } from '@/context/LanguageContext';
 import { useUserPreferences } from '@/context/UserPreferencesContext';
 import { useTheme } from '@/context/ThemeContext';
 import Slider from '@/components/Slider';
-import { ONE_TIME_PURCHASES, purchaseOneTimeProduct, SUBSCRIPTION_SKUS, purchaseSubscription, getPurchaseState, restorePurchases } from '@/services/purchase';
+import { ONE_TIME_PURCHASES, purchaseOneTimeProduct, SUBSCRIPTION_SKUS, purchaseSubscription, getPurchaseState, restorePurchases, getMyProducts } from '@/services/purchase';
+import { ProductIOS } from 'react-native-iap';
+import { SubscriptionIOS } from 'react-native-iap';
 
 export default function SettingsScreen() {
   const { language, setLanguage, t } = useLanguage();
@@ -17,9 +19,12 @@ export default function SettingsScreen() {
   const [speechRate, setSpeechRate] = useState(preferences.speechSettings.rate);
   const [speechPitch, setSpeechPitch] = useState(preferences.speechSettings.pitch);
   const [isPurchasesLoading, setIsPurchasesLoading] = useState(true);
+  const [products, setProducts] = useState<Array<SubscriptionIOS | ProductIOS>>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [purchases, setPurchases] = useState({
-    uses20: false,
-    unlimited: false,
+    [SUBSCRIPTION_SKUS.MONTHLY]: false,
+    [ONE_TIME_PURCHASES.TWENTY_USES]: false,
   });
 
   const handleSpeechRateChange = (value: number) => {
@@ -46,11 +51,11 @@ export default function SettingsScreen() {
     setTheme(newTheme);
   };
 
-  const handlePurchase = async (type: 'uses20' | 'unlimited') => {
+  const handlePurchase = async (type: 'com.fibli.iap.twentyusagenerations' | 'com.fibli.subscription.monthlyunlimited') => {
     let success = false;
     try {
       if (purchases[type]) return;
-      if (type === 'uses20') {
+      if (type === 'com.fibli.iap.twentyusagenerations') {
         success = await purchaseOneTimeProduct(ONE_TIME_PURCHASES.TWENTY_USES);
       } else {
         success = await purchaseSubscription(SUBSCRIPTION_SKUS.MONTHLY);
@@ -74,15 +79,15 @@ export default function SettingsScreen() {
 
   const handleRestorePurchases = async () => {
     setIsPurchasesLoading(true);
-    
+
     try {
       const success = await restorePurchases();
       if (success) {
         // Refresh purchase state
         const newState = await getPurchaseState();
         setPurchases({
-          uses20: newState.purchasedUses >= 20,
-          unlimited: newState.isSubscribed,
+          [ONE_TIME_PURCHASES.TWENTY_USES]: newState.purchasedUses >= 20,
+          [SUBSCRIPTION_SKUS.MONTHLY]: newState.isSubscribed,
         });
         Alert.alert(t.success, t.purchasesRestored);
       } else {
@@ -96,12 +101,26 @@ export default function SettingsScreen() {
   };
 
   useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const products = await getMyProducts();
+        setProducts(products);
+        setIsLoading(false);
+      } catch (error) {
+        setError(t.purchaseFailed);
+        setIsLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
+
+  useEffect(() => {
     const fetchPurchases = async () => {
       setIsPurchasesLoading(true);
       const purchases = await getPurchaseState();
       setPurchases({
-        uses20: purchases.purchasedUses >= 20,
-        unlimited: purchases.isSubscribed,
+        [ONE_TIME_PURCHASES.TWENTY_USES]: purchases.purchasedUses >= 20,
+        [SUBSCRIPTION_SKUS.MONTHLY]: purchases.isSubscribed,
       });
       setIsPurchasesLoading(false);
     };
@@ -330,98 +349,99 @@ export default function SettingsScreen() {
             <Text style={[styles.sectionTitle, { color: colors.text }]}>{t.upgradeToPro}</Text>
           </View>
           <View style={styles.sectionContent}>
-            <TouchableOpacity
-              style={[styles.restoreButton, { backgroundColor: colors.background }]}
-              onPress={handleRestorePurchases}
-              disabled={isPurchasesLoading}
-            >
-              <Text style={[styles.restoreButtonText, { color: colors.primary }]}>
-                {isPurchasesLoading ? t.restoring : t.restorePurchases}
-              </Text>
-              {isPurchasesLoading && <ActivityIndicator size="small" color={colors.primary} style={styles.restoreSpinner} />}
-            </TouchableOpacity>
+            {
+              isLoading ? (
+                <ActivityIndicator size="small" color={colors.primary} />
+              ) : (
+                <>
+                  {products.find(p => p.productId === SUBSCRIPTION_SKUS.MONTHLY) && (
+                    <TouchableOpacity
+                      style={[
+                        styles.purchaseItem,
+                        { backgroundColor: colors.background },
+                        purchases[SUBSCRIPTION_SKUS.MONTHLY] && styles.purchasedItem,
+                        purchases[SUBSCRIPTION_SKUS.MONTHLY] && {
+                          shadowColor: '#FFD700',
+                          shadowOffset: { width: 0, height: 0 },
+                          shadowOpacity: 0.5,
+                          shadowRadius: 8,
+                          elevation: 8,
+                        }
+                      ]}
+                      onPress={() => handlePurchase(SUBSCRIPTION_SKUS.MONTHLY)}
+                      disabled={purchases[SUBSCRIPTION_SKUS.MONTHLY]}
+                    >
+                      <View style={styles.purchaseHeader}>
+                        <View>
+                          <View style={styles.subscriptionBadge}>
+                            <Text style={styles.subscriptionBadgeText}>{t.bestValue}</Text>
+                          </View>
+                          <Text style={[styles.purchaseTitle, { color: colors.text, marginTop: 24 }]}>{t.monthlyUnlimited}</Text>
+                        </View>
+                        {isPurchasesLoading ? (
+                          <ActivityIndicator size="small" color={colors.primary} />
+                        ) : (
+                          <>
+                            {purchases[SUBSCRIPTION_SKUS.MONTHLY] ? (
+                              <Text style={[styles.purchasedText, { color: colors.primary }]}>{t.active}</Text>
+                            ) : (
+                              <Text style={[styles.purchasePrice, { color: colors.primary }]}>{products.find(p => p.productId === SUBSCRIPTION_SKUS.MONTHLY)?.localizedPrice}</Text>
+                            )}
+                          </>
+                        )}
+                      </View>
+                      <Text style={[
+                        styles.purchaseDescription,
+                        { color: colors.secondaryText },
+                        purchases[SUBSCRIPTION_SKUS.MONTHLY] && styles.purchasedDescription
+                      ]}>
+                        {t.monthlyUnlimitedDescription}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
 
-            <TouchableOpacity
-              style={[
-                styles.purchaseItem,
-                { backgroundColor: colors.background },
-                purchases.unlimited && styles.purchasedItem,
-                purchases.unlimited && {
-                  shadowColor: '#FFD700',
-                  shadowOffset: { width: 0, height: 0 },
-                  shadowOpacity: 0.5,
-                  shadowRadius: 8,
-                  elevation: 8,
-                }
-              ]}
-              onPress={() => handlePurchase('unlimited')}
-              disabled={purchases.unlimited}
-            >
-              <View style={styles.purchaseHeader}>
-                <View>
-                  <View style={styles.subscriptionBadge}>
-                    <Text style={styles.subscriptionBadgeText}>{t.bestValue}</Text>
-                  </View>
-                  <Text style={[styles.purchaseTitle, { color: colors.text, marginTop: 24 }]}>{t.monthlyUnlimited}</Text>
-                </View>
-                {isPurchasesLoading ? (
-                  <ActivityIndicator size="small" color={colors.primary} />
-                ) : (
-                  <>
-                    {purchases.unlimited ? (
-                      <Text style={[styles.purchasedText, { color: colors.primary }]}>{t.active}</Text>
-                    ) : (
-                      <Text style={[styles.purchasePrice, { color: colors.primary }]}>{t.monthlyPrice}</Text>
-                    )}
-                  </>
-                )}
-              </View>
-              <Text style={[
-                styles.purchaseDescription,
-                { color: colors.secondaryText },
-                purchases.unlimited && styles.purchasedDescription
-              ]}>
-                {t.monthlyUnlimitedDescription}
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[
-                styles.purchaseItem,
-                { backgroundColor: colors.background },
-                purchases.uses20 && styles.purchasedItem,
-                purchases.uses20 && {
-                  shadowColor: '#FFD700',
-                  shadowOffset: { width: 0, height: 0 },
-                  shadowOpacity: 0.5,
-                  shadowRadius: 8,
-                  elevation: 8,
-                }
-              ]}
-              onPress={() => handlePurchase('uses20')}
-            >
-              <View style={styles.purchaseHeader}>
-                <Text style={[styles.purchaseTitle, { color: colors.text }]}>{t.twentyUsesPackage}</Text>
-                {isPurchasesLoading ? (
-                  <ActivityIndicator size="small" color={colors.primary} />
-                ) : (
-                  <>
-                    {purchases.uses20 ? (
-                      <Text style={[styles.purchasedText, { color: colors.primary }]}>{t.active}</Text>
-                    ) : (
-                      <Text style={[styles.purchasePrice, { color: colors.primary }]}>$6.99</Text>
-                    )}
-                  </>
-                )}
-              </View>
-              <Text style={[
-                styles.purchaseDescription,
-                { color: colors.secondaryText },
-                purchases.uses20 && styles.purchasedDescription
-              ]}>
-                {t.twentyUsesPackageDescription}
-              </Text>
-            </TouchableOpacity>
+                  {products.find(p => p.productId === ONE_TIME_PURCHASES.TWENTY_USES) && (
+                    <TouchableOpacity
+                      style={[
+                        styles.purchaseItem,
+                        { backgroundColor: colors.background },
+                        purchases[ONE_TIME_PURCHASES.TWENTY_USES] && styles.purchasedItem,
+                        purchases[ONE_TIME_PURCHASES.TWENTY_USES] && {
+                          shadowColor: '#FFD700',
+                          shadowOffset: { width: 0, height: 0 },
+                          shadowOpacity: 0.5,
+                          shadowRadius: 8,
+                          elevation: 8,
+                        }
+                      ]}
+                      onPress={() => handlePurchase(ONE_TIME_PURCHASES.TWENTY_USES)}
+                    >
+                      <View style={styles.purchaseHeader}>
+                        <Text style={[styles.purchaseTitle, { color: colors.text }]}>{t.twentyUsesPackage}</Text>
+                        {isPurchasesLoading ? (
+                          <ActivityIndicator size="small" color={colors.primary} />
+                        ) : (
+                          <>
+                            {purchases[ONE_TIME_PURCHASES.TWENTY_USES] ? (
+                              <Text style={[styles.purchasedText, { color: colors.primary }]}>{t.active}</Text>
+                            ) : (
+                              <Text style={[styles.purchasePrice, { color: colors.primary }]}>{products.find(p => p.productId === ONE_TIME_PURCHASES.TWENTY_USES)?.localizedPrice}</Text>
+                            )}
+                          </>
+                        )}
+                      </View>
+                      <Text style={[
+                        styles.purchaseDescription,
+                        { color: colors.secondaryText },
+                        purchases[ONE_TIME_PURCHASES.TWENTY_USES] && styles.purchasedDescription
+                      ]}>
+                        {t.twentyUsesPackageDescription}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </>
+              )
+            }
           </View>
         </Animatable.View>
 
@@ -446,7 +466,7 @@ export default function SettingsScreen() {
               </View>
             </TouchableOpacity>
 
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[styles.aboutItem, { backgroundColor: colors.background }]}
               onPress={() => Linking.openURL('https://fibli.app/privacy')}
             >
@@ -454,7 +474,7 @@ export default function SettingsScreen() {
               <ChevronRight size={18} color={colors.secondaryText} />
             </TouchableOpacity>
 
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[styles.aboutItem, { backgroundColor: colors.background }]}
               onPress={() => Linking.openURL('https://fibli.app/support')}
             >
@@ -462,7 +482,7 @@ export default function SettingsScreen() {
               <ChevronRight size={18} color={colors.secondaryText} />
             </TouchableOpacity>
 
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[styles.aboutItem, { backgroundColor: colors.background }]}
               onPress={() => Linking.openURL('https://fibli.app/terms')}
             >

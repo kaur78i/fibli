@@ -10,51 +10,18 @@ import {
 	Alert,
 	ActivityIndicator,
 } from 'react-native';
-import { purchaseOneTimeProduct, purchaseSubscription, SUBSCRIPTION_SKUS, ONE_TIME_PURCHASES, getPurchaseState, restorePurchases } from '@/services/purchase';
+import { purchaseOneTimeProduct, purchaseSubscription, SUBSCRIPTION_SKUS, ONE_TIME_PURCHASES, getPurchaseState, restorePurchases, getMyProducts } from '@/services/purchase';
 import * as Animatable from 'react-native-animatable';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '@/context/ThemeContext';
 import { Star } from 'lucide-react-native';
 import { useLanguage } from '@/context/LanguageContext';
-
-interface PurchaseOption {
-	id: string;
-	title: string;
-	price: string;
-	description: string;
-	type: 'oneTime' | 'subscription';
-	period?: string; // for subscriptions only
-	onPurchase: () => Promise<boolean>;
-}
+import { ProductIOS, SubscriptionIOS } from 'react-native-iap';
 
 interface PurchaseModalProps {
 	visible: boolean;
 	onClose: () => void;
 }
-
-const purchaseOptions: PurchaseOption[] = [
-	{
-		id: 'monthly',
-		title: 'Monthly Plan',
-		price: '$14.99/month',
-		description: 'Full access with monthly billing',
-		type: 'subscription',
-		period: 'monthly',
-		onPurchase: async () => {
-			return await purchaseSubscription(SUBSCRIPTION_SKUS.MONTHLY);
-		},
-	},
-	{
-		id: 'premium',
-		title: 'Premium Access',
-		price: '$6.99',
-		description: 'One-time purchase for 20 uses',
-		type: 'oneTime',
-		onPurchase: async () => {
-			return await purchaseOneTimeProduct(ONE_TIME_PURCHASES.TWENTY_USES);
-		},
-	},
-];
 
 const PurchaseModal: React.FC<PurchaseModalProps> = ({
 	visible,
@@ -63,82 +30,45 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
 	const { colors } = useTheme();
 	const { t } = useLanguage();
 	const [selectedOption, setSelectedOption] = useState<string | null>(null);
-	const [isPurchasesLoading, setIsPurchasesLoading] = useState(false);
+	const [isSubscribed, setIsSubscribed] = useState(false);
 	const [isPurchasing, setIsPurchasing] = useState(false);
+	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
-	const [purchases, setPurchases] = useState({
-		oneTime: false,
-		subscription: false,
-	});
+	const [products, setProducts] = useState<Array<SubscriptionIOS | ProductIOS>>([]);
 
 	useEffect(() => {
-		const fetchPurchases = async () => {
-			setIsPurchasesLoading(true);
-			const purchases = await getPurchaseState();
-			setPurchases({
-				oneTime: purchases.purchasedUses >= 20,
-				subscription: purchases.isSubscribed,
-			});
-			setIsPurchasesLoading(false);
+		const fetchProducts = async () => {
+			try {
+				const products = await getMyProducts();
+				setProducts(products);
+				setIsLoading(false);
+			} catch (error) {
+				setError(t.purchaseFailed);
+				setIsLoading(false);
+			}
 		};
-		fetchPurchases();
+		fetchProducts();
+	}, []);
+
+	useEffect(() => {
+		getPurchaseState().then((state) => {
+			setIsSubscribed(state.isSubscribed);
+		});
 	}, []);
 
 	const handlePurchase = async () => {
-		let success = false;
-		const selected = purchaseOptions.find(
-			(option) => option.id === selectedOption
-		);
-		if (selected) {
-			setError(null);
-			setIsPurchasing(true);
-			try {
-				success = await selected.onPurchase();
-				if (success) {
-					setPurchases(prev => ({
-						...prev,
-						[selected.type]: true
-					}));
-					if (Platform.OS === 'web') {
-						alert(t.purchaseSuccess);
-					} else {
-						Alert.alert(t.success, t.purchaseSuccess);
-					}
-					onClose();
-				} else {
-					throw new Error(t.purchaseFailed);
-				}
-			} catch (err: any) {
-				if (Platform.OS === 'web') {
-					alert(t.purchaseFailed + ': ' + err.message);
-				} else {
-					Alert.alert(t.error, t.purchaseFailed + ': ' + err.message);
-				}
-			} finally {
-				setIsPurchasing(false);
-			}
-		}
-	};
-
-	const handleRestore = async () => {
+		if (!selectedOption) return;
 		setIsPurchasing(true);
 		setError(null);
-		
 		try {
-			const success = await restorePurchases();
+			const success = await purchaseSubscription(SUBSCRIPTION_SKUS.MONTHLY);
 			if (success) {
-				// Refresh purchase state
-				const newState = await getPurchaseState();
-				setPurchases({
-					oneTime: newState.purchasedUses >= 20,
-					subscription: newState.isSubscribed,
-				});
-				Alert.alert(t.success, t.purchasesRestored);
+				Alert.alert(t.success, t.purchaseSuccessful);
 			} else {
-				setError(t.restoreFailed);
+				setError(t.purchaseFailed);
 			}
 		} catch (error) {
-			setError(t.restoreFailed);
+			setError(t.purchaseFailed);
 		} finally {
 			setIsPurchasing(false);
 		}
@@ -171,60 +101,54 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
 						</Animatable.View>
 					</LinearGradient>
 
-					<TouchableOpacity
-						style={[styles.restoreButton, { borderColor: colors.primary }]}
-						onPress={handleRestore}
-						disabled={isPurchasing}
-					>
-						<Text style={[styles.restoreButtonText, { color: colors.primary }]}>
-							{isPurchasing ? t.restoring : t.restorePurchases}
-						</Text>
-					</TouchableOpacity>
-
 					<ScrollView style={styles.optionsContainer}>
-						{purchaseOptions.map((option, index) => (
-							<Animatable.View
-								key={option.id}
-								animation="fadeInRight"
-								duration={500}
-								delay={index * 100}
-							>
-								<TouchableOpacity
-									style={[
-										styles.optionCard,
-										{ backgroundColor: colors.background },
-										selectedOption === option.id && {
-											borderColor: colors.primary,
-											borderWidth: 2,
-											backgroundColor: colors.card
-										}
-									]}
-									onPress={() => setSelectedOption(option.id)}
-									disabled={isPurchasesLoading || purchases[option.type]}
+						{isLoading ? (
+							<ActivityIndicator size="large" color={colors.primary} />
+						) : (
+							products.map((product, index) => (
+								<Animatable.View
+									key={product.productId}
+									animation="fadeInRight"
+									duration={500}
+									delay={index * 100}
 								>
-									{option.type === 'subscription' && (
-										<View style={[styles.bestValueBadge, { backgroundColor: colors.primary }]}>
-											<Text style={styles.bestValueText}>{t.bestValue}</Text>
-										</View>
-									)}
-									<Text style={[styles.optionTitle, { color: colors.text }]}>{option.title}</Text>
-									<Text style={[styles.optionPrice, { color: colors.primary }]}>{option.price}</Text>
-									<Text style={[styles.optionDescription, { color: colors.secondaryText }]}>
-										{option.description}
-									</Text>
-									{option.type === 'subscription' && (
-										<Text style={[styles.periodLabel, { color: colors.secondaryText }]}>
-											{option.period === 'monthly' ? t.monthlyBilling : t.annualBilling}
+									<TouchableOpacity
+										style={[
+											styles.optionCard,
+											{ backgroundColor: colors.background },
+											selectedOption === product.productId && {
+												borderColor: colors.primary,
+												borderWidth: 2,
+												backgroundColor: colors.card
+											}
+										]}
+										onPress={() => setSelectedOption(product.productId)}
+										disabled={isPurchasing || isSubscribed}
+									>
+										{product.productId === SUBSCRIPTION_SKUS.MONTHLY && (
+											<View style={[styles.bestValueBadge, { backgroundColor: colors.primary }]}>
+												<Text style={styles.bestValueText}>{t.bestValue}</Text>
+											</View>
+										)}
+										<Text style={[styles.optionTitle, { color: colors.text }]}>{product.title}</Text>
+										<Text style={[styles.optionPrice, { color: colors.primary }]}>{product.localizedPrice}</Text>
+										<Text style={[styles.optionDescription, { color: colors.secondaryText }]}>
+											{product.description}
 										</Text>
-									)}
-									{selectedOption === option.id && (
-										<Animatable.View animation="bounceIn" style={styles.checkmark}>
-											<Star size={20} color={colors.primary} fill={colors.primary} />
-										</Animatable.View>
-									)}
-								</TouchableOpacity>
-							</Animatable.View>
-						))}
+										{product.productId === SUBSCRIPTION_SKUS.MONTHLY && (
+											<Text style={[styles.periodLabel, { color: colors.secondaryText }]}>
+												{t.monthlyBilling}
+											</Text>
+										)}
+										{selectedOption === product.productId && (
+											<Animatable.View animation="bounceIn" style={styles.checkmark}>
+												<Star size={20} color={colors.primary} fill={colors.primary} />
+											</Animatable.View>
+										)}
+									</TouchableOpacity>
+								</Animatable.View>
+							))
+						)}
 					</ScrollView>
 
 					{error && (

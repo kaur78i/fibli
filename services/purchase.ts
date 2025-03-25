@@ -10,9 +10,9 @@ import {
   requestPurchase,
   getAvailablePurchases,
   PurchaseError,
-  Subscription,
-  Product,
-  Purchase
+  Purchase,
+  SubscriptionIOS,
+  ProductIOS
 } from 'react-native-iap';
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
@@ -58,10 +58,10 @@ export async function initializePurchases() {
     const availablePurchases = await getAvailablePurchases();
     availablePurchases.forEach(async (purchase) => {
       if (purchase.productId === SUBSCRIPTION_SKUS.MONTHLY) {
-        await handleSubscriptionPurchase(purchase);
+        await handleSubscriptionPurchase();
       }
       if (purchase.productId === ONE_TIME_PURCHASES.TWENTY_USES) {
-        await handleOneTimePurchase(purchase);
+        await handleOneTimePurchase();
       }
       await finishTransaction({ purchase });
     });
@@ -75,11 +75,11 @@ export async function initializePurchases() {
           // await validateReceiptWithServer(receipt);
 
           if (purchase.productId === SUBSCRIPTION_SKUS.MONTHLY) {
-            await handleSubscriptionPurchase(purchase);
+            await handleSubscriptionPurchase();
           }
 
           if (purchase.productId === ONE_TIME_PURCHASES.TWENTY_USES) {
-            await handleOneTimePurchase(purchase);
+            await handleOneTimePurchase();
           }
 
           await finishTransaction({ purchase });
@@ -98,7 +98,7 @@ export async function initializePurchases() {
   }
 }
 
-async function handleSubscriptionPurchase(purchase: Purchase) {
+async function handleSubscriptionPurchase() {
   if (isWeb) return;
   const status = await getSubscriptionStatus();
   if (status.isSubscribed && status.expiryDate && status.expiryDate > Date.now()) {
@@ -108,7 +108,7 @@ async function handleSubscriptionPurchase(purchase: Purchase) {
   }
 }
 
-async function handleOneTimePurchase(purchase: Purchase) {
+async function handleOneTimePurchase() {
   const currentUses = await SecureStore.getItemAsync(PURCHASED_USES_KEY) || '0';
   const newUses = parseInt(currentUses) + 20;
   await SecureStore.setItemAsync(PURCHASED_USES_KEY, newUses.toString());
@@ -124,7 +124,7 @@ export async function endPurchaseConnection() {
   await endConnection();
 }
 
-export async function getMyProducts(): Promise<Array<Subscription | Product>> {
+export async function getMyProducts(): Promise<Array<SubscriptionIOS | ProductIOS>> {
   if (isWeb) {
     console.log('IAP not supported on web platform');
     return [];
@@ -136,7 +136,7 @@ export async function getMyProducts(): Promise<Array<Subscription | Product>> {
       getProducts({ skus: [ONE_TIME_PURCHASES.TWENTY_USES] })
     ]);
 
-    return [...subscriptions, ...products];
+    return [...subscriptions, ...products] as Array<SubscriptionIOS | ProductIOS>;
   } catch (error) {
     console.error('Error fetching products:', error);
     return [];
@@ -151,10 +151,10 @@ export async function restorePurchases(): Promise<boolean> {
 
     for (const purchase of availablePurchases) {
       if (purchase.productId === SUBSCRIPTION_SKUS.MONTHLY) {
-        await handleSubscriptionPurchase(purchase);
+        await handleSubscriptionPurchase();
       }
       if (purchase.productId === ONE_TIME_PURCHASES.TWENTY_USES) {
-        await handleOneTimePurchase(purchase);
+        await handleOneTimePurchase();
       }
       await finishTransaction({ purchase });
     }
@@ -225,6 +225,7 @@ export async function getPurchaseState(): Promise<PurchaseState> {
     };
   }
 }
+
 export async function getSubscriptionStatus(): Promise<SubscriptionStatus> {
   if (isWeb) return { isSubscribed: false };
 

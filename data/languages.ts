@@ -123,9 +123,9 @@ const translations = {
     monthlyUnlimited: 'Monthly Unlimited',
     active: 'Active',
     monthlyPrice: '$14.99/month',
-    monthlyUnlimitedDescription: '• Unlimited premium stories\n• Priority support\n• Access to all premium features\n• Cancel anytime',
+    monthlyUnlimitedDescription: '• Unlimited premium stories\n• Priority support\n• Access to all premium features',
     twentyUsesPackage: '20 Uses Package',
-    twentyUsesPackageDescription: '• Get 20 premium stories\n• No monthly commitment\n• Access to all premium features',
+    twentyUsesPackageDescription: '• Get 20 premium stories\n• Access to all premium features',
 
     // Purchase Modal
     chooseYourPlan: 'Choose Your Plan',
@@ -245,9 +245,9 @@ const translations = {
     monthlyUnlimited: 'Ilimitado Mensual',
     active: 'Activo',
     monthlyPrice: '$14.99/month',
-    monthlyUnlimitedDescription: '• Historias premium ilimitadas\n• Soporte prioritario\n• Acceso a todas las características premium\n• Cancelar en cualquier momento',
+    monthlyUnlimitedDescription: '• Historias premium ilimitadas\n• Soporte prioritario\n• Acceso a todas las características premium',
     twentyUsesPackage: 'Paquete de 20 Usos',
-    twentyUsesPackageDescription: '• Obtén 20 historias premium\n• Sin compromiso mensual\n• Acceso a todas las características premium',
+    twentyUsesPackageDescription: '• Obtén 20 historias premium\n• Acceso a todas las características premium',
 
     // Purchase Modal
     chooseYourPlan: 'Elige tu plan',
@@ -366,9 +366,9 @@ const translations = {
     monthlyUnlimited: 'Ilimité Mensuel',
     active: 'Actif',
     monthlyPrice: '$14.99/month',
-    monthlyUnlimitedDescription: '• Histoires premium illimitées\n• Support prioritaire\n• Accès à toutes les fonctionnalités premium\n• Annuler à tout moment',
+    monthlyUnlimitedDescription: '• Histoires premium illimitées\n• Support prioritaire\n• Accès à toutes les fonctionnalités premium',
     twentyUsesPackage: 'Paquete de 20 Usos',
-    twentyUsesPackageDescription: '• Obtén 20 historias premium\n• Sin compromiso mensual\n• Acceso a todas las características premium',
+    twentyUsesPackageDescription: '• Obtén 20 historias premium\n• Acceso a todas las características premium',
 
     // Purchase Modal
     chooseYourPlan: 'Choisissez votre plan',
@@ -489,9 +489,9 @@ const translations = {
     monthlyUnlimited: 'Monatlich Unbegrenzt',
     active: 'Aktiv',
     monthlyPrice: '$14.99/month',
-    monthlyUnlimitedDescription: '• Premium-Geschichten unbegrenzt\n• Prioritärer Support\n• Zugang zu allen Premium-Funktionen\n• Jederzeit stornierbar',
+    monthlyUnlimitedDescription: '• Premium-Geschichten unbegrenzt\n• Prioritärer Support\n• Zugang zu allen Premium-Funktionen',
     twentyUsesPackage: '20 Uses Package',
-    twentyUsesPackageDescription: '• Get 20 premium stories\n• No monthly commitment\n• Access to all premium features',
+    twentyUsesPackageDescription: '• Get 20 premium stories\n• Access to all premium features',
 
     // Purchase Modal
     chooseYourPlan: 'Wählen Sie Ihren Plan',
@@ -612,9 +612,9 @@ const translations = {
     monthlyUnlimited: 'Mensile Illimitato',
     active: 'Attivo',
     monthlyPrice: '$14.99/month',
-    monthlyUnlimitedDescription: '• Storie premium illimitate\n• Supporto prioritario\n• Accesso a tutte le funzionalità premium\n• Annullare in qualsiasi momento',
+    monthlyUnlimitedDescription: '• Storie premium illimitate\n• Supporto prioritario\n• Accesso a tutte le funzionalità premium',
     twentyUsesPackage: 'Paquete de 20 Usos',
-    twentyUsesPackageDescription: '• Obtén 20 historias premium\n• Sin compromiso mensual\n• Acceso a todas las características premium',
+    twentyUsesPackageDescription: '• Obtén 20 historias premium\n• Acceso a todas las características premium',
 
     // Purchase Modal
     chooseYourPlan: 'Scegli il tuo piano',
@@ -735,9 +735,9 @@ const translations = {
     monthlyUnlimited: 'Mensal Ilimitado',
     active: 'Ativo',
     monthlyPrice: '$14.99/month',
-    monthlyUnlimitedDescription: '• Histórias premium ilimitadas\n• Suporte prioritário\n• Acesso a todas as funcionalidades premium\n• Cancelar em qualquer momento',
+    monthlyUnlimitedDescription: '• Histórias premium ilimitadas\n• Suporte prioritário\n• Acesso a todas as funcionalidades premium',
     twentyUsesPackage: 'Paquete de 20 Usos',
-    twentyUsesPackageDescription: '• Obtén 20 historias premium\n• Sin compromiso mensual\n• Acceso a todas las características premium',
+    twentyUsesPackageDescription: '• Obtén 20 historias premium\n• Acceso a todas las características premium',
 
     // Purchase Modal
     chooseYourPlan: 'Escolha seu plano',
