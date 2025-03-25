@@ -1,14 +1,14 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { StyleSheet, Text, View, SafeAreaView, FlatList, TouchableOpacity, Platform, Alert, Modal, TextInput } from 'react-native';
-import { useFocusEffect, useRouter } from 'expo-router';
-import { CreditCard as Edit2, Trash2, BookOpen, Sparkles, Share2, Plus } from 'lucide-react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { StyleSheet, Text, View, SafeAreaView, FlatList, TouchableOpacity, Platform, Alert } from 'react-native';
+import { useFocusEffect, useRouter, useLocalSearchParams } from 'expo-router';
+import { CreditCard as Edit2, Trash2, BookOpen, Sparkles, Share2 } from 'lucide-react-native';
 import * as Animatable from 'react-native-animatable';
 import { LinearGradient } from 'expo-linear-gradient';
 import StoryCard from '@/components/StoryCard';
 import { useLanguage } from '@/context/LanguageContext';
 import { useTheme } from '@/context/ThemeContext';
 import { TStoryGist } from '@/types';
-import { getGists, deleteStory, getStoryByInviteCode, addInvitedStory } from '@/services/supabase';
+import { getGists, deleteStory, addInvitedStory } from '@/services/supabase';
 import * as Clipboard from 'expo-clipboard';
 import { getUserId } from '@/services/getUserId';
 
@@ -19,11 +19,55 @@ export default function LibraryScreen() {
   const [userId, setUserId] = useState<string | null>(null);
   const [gists, setGists] = useState<TStoryGist[]>([]);
   const [animationKey, setAnimationKey] = useState(0);
-  const router = useRouter();
-  const [modalVisible, setModalVisible] = useState(false);
-  const [inviteCode, setInviteCode] = useState('');
-  const [isLoadingInvite, setIsLoadingInvite] = useState(false);
   const [previewGist, setPreviewGist] = useState<TStoryGist | null>(null);
+  const router = useRouter();
+  const { error, success } = useLocalSearchParams<{ error?: string, success?: string }>();
+
+  useFocusEffect(
+    useCallback(() => {
+      if (error) {
+        if (Platform.OS === 'web') {
+          if (error === 'alreadyExists') {
+            alert(t.storyAlreadyExists);
+          } else if (error === 'storyNotFound') {
+            alert(t.storyNotFound);
+          } else {
+            alert(error);
+          }
+        } else {
+          if (error === 'alreadyExists') {
+            Alert.alert(t.error, t.storyAlreadyExists);
+          } else if (error === 'storyNotFound') {
+            Alert.alert(t.error, t.storyNotFound);
+          } else {
+            Alert.alert(t.error, error);
+          }
+        }
+        router.replace({ pathname: '/library' });
+      }
+    }, [error])
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      if (success) {
+        if (Platform.OS === 'web') {
+          if (success === 'storyAdded') { 
+            alert(t.storyAdded);
+          } else {
+            alert(success);
+          }
+        } else {
+          if (success === 'storyAdded') {
+            Alert.alert(t.success, t.storyAdded);
+          } else {
+            Alert.alert(t.success, success);
+          }
+        }
+        router.replace({ pathname: '/library' });
+      }
+    }, [success])
+  );
 
   // Refresh animation when stories change
   useEffect(() => {
@@ -82,69 +126,19 @@ export default function LibraryScreen() {
 
   const handleShare = async (gistId: string) => {
     try {
-      const inviteCode = `${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/invite?code=${gistId}`;
-      await Clipboard.setStringAsync(inviteCode);
+      const inviteUrl = `https://fibli.app/share/${gistId}`;
+      await Clipboard.setStringAsync(inviteUrl);
 
       if (Platform.OS === 'web') {
-        alert(t.urlCopied || 'Invite code copied to clipboard!');
+        alert(t.urlCopied || 'Invite link copied to clipboard!');
       } else {
         Alert.alert(
           t.shareSuccess || 'Success',
-          t.urlCopied || 'Invite code copied to clipboard!'
+          t.urlCopied || 'Invite link copied to clipboard!'
         );
       }
     } catch (error) {
       console.error('Error sharing story:', error);
-    }
-  };
-
-  const handleInviteCode = async () => {
-    if (!inviteCode.trim()) {
-      if (Platform.OS === 'web') {
-        alert(t.invalidInviteCode || 'Please enter a valid invite code');
-      } else {
-        Alert.alert(t.error || 'Error', t.invalidInviteCode || 'Please enter a valid invite code');
-      }
-      return;
-    }
-
-    try {
-      setIsLoadingInvite(true);
-      setPreviewGist(null);
-      const storyGist = await getStoryByInviteCode(inviteCode.trim());
-
-      if (!storyGist) {
-        if (Platform.OS === 'web') {
-          alert(t.storyNotFound || 'Story not found with this invite code');
-        } else {
-          Alert.alert(t.error || 'Error', t.storyNotFound || 'Story not found with this invite code');
-        }
-        return;
-      }
-
-      // Check if story already exists in library
-      const exists = gists.some(gist => gist.id === storyGist.id);
-      if (exists) {
-        if (Platform.OS === 'web') {
-          alert(t.storyAlreadyExists || 'This story is already in your library');
-        } else {
-          Alert.alert(t.info || 'Information', t.storyAlreadyExists || 'This story is already in your library');
-        }
-        return;
-      }
-
-      // Show the preview
-      setPreviewGist(storyGist);
-
-    } catch (error) {
-      console.error('Error fetching story by invite code:', error);
-      if (Platform.OS === 'web') {
-        alert(t.errorFetchingStory || 'Error fetching story. Please try again.');
-      } else {
-        Alert.alert(t.error || 'Error', t.errorFetchingStory || 'Error fetching story. Please try again.');
-      }
-    } finally {
-      setIsLoadingInvite(false);
     }
   };
 
@@ -157,9 +151,6 @@ export default function LibraryScreen() {
       await addInvitedStory({ gist_id, user_id: userId! });
       setGists(prev => [previewGist, ...prev]);
 
-      // Reset and close modal
-      setModalVisible(false);
-      setInviteCode('');
       setPreviewGist(null);
 
       if (Platform.OS === 'web') {
@@ -235,151 +226,12 @@ export default function LibraryScreen() {
             <Text style={styles.subtitle}>{t.librarySubtitle}</Text>
           </Animatable.View>
           <Animatable.View animation="fadeIn" delay={800} style={styles.headerActions}>
-            <TouchableOpacity
-              style={styles.addButton}
-              onPress={() => setModalVisible(true)}
-            >
-              <Plus size={20} color="#fff" />
-            </TouchableOpacity>
             <View style={styles.headerIcon}>
               <Sparkles size={24} color="#fff" />
             </View>
           </Animatable.View>
         </View>
       </LinearGradient>
-
-      {/* Invite Code Modal */}
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => {
-          setModalVisible(false);
-          setInviteCode('');
-          setPreviewGist(null);
-        }}
-      >
-        <View style={styles.modalOverlay}>
-          <Animatable.View
-            animation="zoomIn"
-            duration={300}
-            style={[styles.modalContent, { backgroundColor: colors.card }]}
-          >
-            <Text style={[styles.modalTitle, { color: colors.text }]}>
-              {previewGist ? (t.previewStory || 'Story Preview') : (t.enterInviteCode || 'Enter Invite Code')}
-            </Text>
-
-            {!previewGist ? (
-              <>
-                <TextInput
-                  style={[styles.input, {
-                    backgroundColor: colors.background,
-                    color: colors.text,
-                    borderColor: colors.cardBorder
-                  }]}
-                  placeholder={t.inviteCodePlaceholder || "Paste invite code here"}
-                  placeholderTextColor={colors.secondaryText}
-                  value={inviteCode}
-                  onChangeText={setInviteCode}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                />
-                <View style={styles.modalActions}>
-                  <TouchableOpacity
-                    style={[styles.modalButton, styles.cancelButton, { borderColor: colors.cardBorder }]}
-                    onPress={() => {
-                      setModalVisible(false);
-                      setInviteCode('');
-                    }}
-                  >
-                    <Text style={[styles.buttonText, { color: colors.secondaryText }]}>
-                      {t.cancel || 'Cancel'}
-                    </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[
-                      styles.modalButton,
-                      styles.submitButton,
-                      { backgroundColor: colors.primary },
-                      isLoadingInvite && { opacity: 0.7 }
-                    ]}
-                    onPress={handleInviteCode}
-                    disabled={isLoadingInvite}
-                  >
-                    <Text style={[styles.buttonText, { color: '#fff' }]}>
-                      {isLoadingInvite
-                        ? (t.loading || 'Loading...')
-                        : (t.findStory || 'Find Story')}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </>
-            ) : (
-              <>
-                <Animatable.View
-                  animation="fadeIn"
-                  duration={500}
-                  style={styles.previewContainer}
-                >
-                  <View style={[styles.previewCard, { backgroundColor: colors.background, borderColor: colors.cardBorder }]}>
-                    <StoryCard
-                      story_id={previewGist.story_id!}
-                      title={previewGist.title}
-                      coverImage={previewGist.image}
-                      chaptersCount={previewGist.chapters.length}
-                      readingTime={previewGist.length}
-                      ageRange={previewGist.age_range}
-                      mood={previewGist.mood}
-                      isEdited={previewGist.isEdited}
-                      isInvited={previewGist.invited}
-                    />
-
-                    <View style={styles.previewDetails}>
-                      <Text style={[styles.previewLabel, { color: colors.secondaryText }]}>
-                        {t.storyPreview || 'Story Preview'}:
-                      </Text>
-                      <Text style={[styles.previewText, { color: colors.text }]}>
-                        {previewGist.preview}
-                      </Text>
-                    </View>
-                  </View>
-                </Animatable.View>
-
-                <Animatable.View
-                  animation="fadeInUp"
-                  duration={500}
-                  delay={200}
-                  style={styles.modalActions}
-                >
-                  <TouchableOpacity
-                    style={[styles.modalButton, styles.cancelButton, { borderColor: colors.cardBorder }]}
-                    onPress={() => {
-                      setPreviewGist(null);
-                    }}
-                  >
-                    <Text style={[styles.buttonText, { color: colors.secondaryText }]}>
-                      {t.back || 'Back'}
-                    </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[
-                      styles.modalButton,
-                      styles.submitButton,
-                      { backgroundColor: colors.primary }
-                    ]}
-                    onPress={async () => await handleAddToLibrary(previewGist.id!)}
-                    disabled={isLoadingInvite}
-                  >
-                    <Text style={[styles.buttonText, { color: '#fff' }]}>
-                      {t.addToLibrary || 'Add to Library'}
-                    </Text>
-                  </TouchableOpacity>
-                </Animatable.View>
-              </>
-            )}
-          </Animatable.View>
-        </View>
-      </Modal>
 
       {loadingGists ? (
         <Animatable.View

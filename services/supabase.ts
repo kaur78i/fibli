@@ -221,22 +221,37 @@ export const getTitles = async (user_id: string) => {
   return data;
 };
 
-export const getStoryByInviteCode = async (code: string) => {
+export const getStoryById = async (id: string) => {
   try {
-    const { success, story } = await fetch(`${process.env.EXPO_PUBLIC_SUPABASE_URL}/functions/v1/invite?code=${code}`, {
-      headers: {
-        'from_app': 'true'
-      }
-    })
-      .then(res => res.json());
-    if (!success) {
+    const { data, error } = await supabase
+      .from('story_gists')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) {
       throw new Error('Invalid invite code');
     }
-    return story;
+    return data;
   } catch (error) {
     console.error('Error in getStoryByInviteCode:', error);
     return null;
   }
+};
+
+export const checkStoryExists = async ({ title, user_id }: { title: string, user_id: string }) => {
+  const { data, error } = await supabase
+    .from('story_gists')
+    .select('*')
+    .eq('title', title)
+    .eq('user_id', user_id)
+
+  if (error) {
+    console.error('Error checking story exists:', error);
+    throw error;
+  }
+
+  return data?.length > 0;
 };
 
 export const addInvitedStory = async ({ gist_id, user_id }: { gist_id: string, user_id: string }) => {

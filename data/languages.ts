@@ -75,11 +75,15 @@ const translations = {
     magical: 'Magical',
     purchaseFailed: 'Purchase failed',
     purchaseSuccess: 'Purchase successful',
+
     // Library
     librarySubtitle: 'Your personal collection of bedtime stories',
     emptyLibrary: 'Your library is empty. Create your first story!',
     chapters: 'chapters',
     min: 'min',
+    storyAdded: 'Story added successfully',
+    storyAlreadyExists: 'Story already exists',
+    storyNotFound: 'Story not found',
 
     // Story Reader
     chapter: 'Chapter',
@@ -195,6 +199,9 @@ const translations = {
     emptyLibrary: '¡Tu biblioteca está vacía. Crea tu primera historia!',
     chapters: 'capítulos',
     min: 'min',
+    storyAdded: 'Historia agregada correctamente',
+    storyAlreadyExists: 'La historia ya existe',
+    storyNotFound: 'Historia no encontrada',
 
     // Story Reader
     chapter: 'Capítulo',
@@ -309,6 +316,9 @@ const translations = {
     emptyLibrary: 'Votre bibliothèque est vide. Créez votre première histoire !',
     chapters: 'chapitres',
     min: 'min',
+    storyAdded: 'Histoire ajoutée avec succès',
+    storyAlreadyExists: 'Histoire déjà existante',
+    storyNotFound: 'Histoire non trouvée',
 
     // Story Reader
     chapter: 'Chapitre',
@@ -425,6 +435,9 @@ const translations = {
     emptyLibrary: 'Ihre Bibliothek ist leer. Erstellen Sie Ihre erste Geschichte!',
     chapters: 'Kapitel',
     min: 'Min',
+    storyAdded: 'Geschichte hinzugefügt mit Erfolg',
+    storyAlreadyExists: 'Geschichte existiert bereits',
+    storyNotFound: 'Geschichte nicht gefunden',
 
     // Story Reader
     chapter: 'Kapitel',
@@ -541,6 +554,9 @@ const translations = {
     emptyLibrary: 'La tua libreria è vuota. Crea la tua prima storia!',
     chapters: 'capitoli',
     min: 'min',
+    storyAdded: 'Storia aggiunta con successo',
+    storyAlreadyExists: 'Storia già esistente',
+    storyNotFound: 'Storia non trovata',
 
     // Story Reader
     chapter: 'Capitolo',
@@ -657,6 +673,9 @@ const translations = {
     emptyLibrary: 'Sua biblioteca está vazia. Crie sua primeira história!',
     chapters: 'capítulos',
     min: 'min',
+    storyAdded: 'História adicionada com sucesso',
+    storyAlreadyExists: 'História já existe',
+    storyNotFound: 'História não encontrada',
 
     // Story Reader
     chapter: 'Capítulo',
