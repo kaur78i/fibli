@@ -15,7 +15,8 @@ import * as Animatable from 'react-native-animatable';
 import { saveStoryGist, saveStory, removeGist } from '@/services/supabase';
 import { TStoryGist } from '@/types';
 import { getUserId } from '@/services/getUserId';
-import { getPurchaseState } from '@/services/purchase';
+import { consumeGeneration, getPurchaseState } from '@/services/purchase';
+import * as SecureStore from 'expo-secure-store';
 import PurchaseModal from '@/components/PurchaseModal';
 
 type AppState = 'input' | 'settings' | 'gist';
@@ -119,6 +120,8 @@ export default function NewStoryScreen() {
         chapters,
         user_id: user_id!,
       });
+      await consumeGeneration();
+
       router.push(`/story/${story.id}`);
     } catch (error) {
       console.error('Error generating story:', error);

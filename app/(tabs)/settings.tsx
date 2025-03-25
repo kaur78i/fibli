@@ -8,7 +8,7 @@ import { useLanguage } from '@/context/LanguageContext';
 import { useUserPreferences } from '@/context/UserPreferencesContext';
 import { useTheme } from '@/context/ThemeContext';
 import Slider from '@/components/Slider';
-import { ONE_TIME_PURCHASES, purchaseOneTimeProduct, SUBSCRIPTION_SKUS, purchaseSubscription, getPurchaseState } from '@/services/purchase';
+import { ONE_TIME_PURCHASES, purchaseOneTimeProduct, SUBSCRIPTION_SKUS, purchaseSubscription, getPurchaseState, restorePurchases } from '@/services/purchase';
 
 export default function SettingsScreen() {
   const { language, setLanguage, t } = useLanguage();
@@ -69,6 +69,29 @@ export default function SettingsScreen() {
       } else {
         Alert.alert(t.error, t.purchaseFailed + ': ' + error.message);
       }
+    }
+  };
+
+  const handleRestorePurchases = async () => {
+    setIsPurchasesLoading(true);
+    
+    try {
+      const success = await restorePurchases();
+      if (success) {
+        // Refresh purchase state
+        const newState = await getPurchaseState();
+        setPurchases({
+          uses20: newState.purchasedUses >= 20,
+          unlimited: newState.isSubscribed,
+        });
+        Alert.alert(t.success, t.purchasesRestored);
+      } else {
+        alert(t.restoreFailed);
+      }
+    } catch (error) {
+      alert(t.restoreFailed);
+    } finally {
+      setIsPurchasesLoading(false);
     }
   };
 
@@ -307,6 +330,17 @@ export default function SettingsScreen() {
             <Text style={[styles.sectionTitle, { color: colors.text }]}>{t.upgradeToPro}</Text>
           </View>
           <View style={styles.sectionContent}>
+            <TouchableOpacity
+              style={[styles.restoreButton, { backgroundColor: colors.background }]}
+              onPress={handleRestorePurchases}
+              disabled={isPurchasesLoading}
+            >
+              <Text style={[styles.restoreButtonText, { color: colors.primary }]}>
+                {isPurchasesLoading ? t.restoring : t.restorePurchases}
+              </Text>
+              {isPurchasesLoading && <ActivityIndicator size="small" color={colors.primary} style={styles.restoreSpinner} />}
+            </TouchableOpacity>
+
             <TouchableOpacity
               style={[
                 styles.purchaseItem,
@@ -662,5 +696,22 @@ const styles = StyleSheet.create({
   },
   purchasedDescription: {
     opacity: 0.7,
+  },
+  restoreButton: {
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.1)',
+  },
+  restoreButtonText: {
+    fontSize: 14,
+    fontFamily: 'Inter-Medium',
+  },
+  restoreSpinner: {
+    marginLeft: 8,
   },
 });

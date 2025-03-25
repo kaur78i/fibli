@@ -1,4 +1,4 @@
-  import {
+import {
   initConnection,
   endConnection,
   finishTransaction,
@@ -11,7 +11,8 @@
   getAvailablePurchases,
   PurchaseError,
   Subscription,
-  Product
+  Product,
+  Purchase
 } from 'react-native-iap';
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
@@ -62,6 +63,7 @@ export async function initializePurchases() {
       if (purchase.productId === ONE_TIME_PURCHASES.TWENTY_USES) {
         await handleOneTimePurchase(purchase);
       }
+      await finishTransaction({ purchase });
     });
 
     // Set up listeners
@@ -96,7 +98,7 @@ export async function initializePurchases() {
   }
 }
 
-async function handleSubscriptionPurchase(purchase: any) {
+async function handleSubscriptionPurchase(purchase: Purchase) {
   if (isWeb) return;
   const status = await getSubscriptionStatus();
   if (status.isSubscribed && status.expiryDate && status.expiryDate > Date.now()) {
@@ -106,7 +108,7 @@ async function handleSubscriptionPurchase(purchase: any) {
   }
 }
 
-async function handleOneTimePurchase(purchase: any) {
+async function handleOneTimePurchase(purchase: Purchase) {
   const currentUses = await SecureStore.getItemAsync(PURCHASED_USES_KEY) || '0';
   const newUses = parseInt(currentUses) + 20;
   await SecureStore.setItemAsync(PURCHASED_USES_KEY, newUses.toString());
@@ -133,11 +135,41 @@ export async function getMyProducts(): Promise<Array<Subscription | Product>> {
       getSubscriptions({ skus: [SUBSCRIPTION_SKUS.MONTHLY] }),
       getProducts({ skus: [ONE_TIME_PURCHASES.TWENTY_USES] })
     ]);
-    
+
     return [...subscriptions, ...products];
   } catch (error) {
     console.error('Error fetching products:', error);
     return [];
+  }
+}
+
+export async function restorePurchases(): Promise<boolean> {
+  if (isWeb) return false;
+
+  try {
+    const availablePurchases = await getAvailablePurchases();
+
+    for (const purchase of availablePurchases) {
+      if (purchase.productId === SUBSCRIPTION_SKUS.MONTHLY) {
+        await handleSubscriptionPurchase(purchase);
+      }
+      if (purchase.productId === ONE_TIME_PURCHASES.TWENTY_USES) {
+        await handleOneTimePurchase(purchase);
+      }
+      await finishTransaction({ purchase });
+    }
+
+    // Update subscription status after processing
+    const subscriptionStatus = await getSubscriptionStatus();
+    await SecureStore.setItemAsync(
+      PURCHASED_UNLIMITED_KEY,
+      subscriptionStatus.isSubscribed ? 'true' : 'false'
+    );
+
+    return true;
+  } catch (error) {
+    console.error('Restore failed:', error);
+    return false;
   }
 }
 
@@ -147,7 +179,10 @@ export async function purchaseSubscription(sku: string): Promise<boolean> {
   try {
     await requestSubscription({ sku });
     return true;
-  } catch (error) {
+  } catch (error: any) {
+    if (error?.code === 'E_ALREADY_OWNED') {
+      return await restorePurchases();
+    }
     console.error('Error purchasing subscription:', error);
     return false;
   }
@@ -159,7 +194,10 @@ export async function purchaseOneTimeProduct(sku: string): Promise<boolean> {
   try {
     await requestPurchase({ sku });
     return true;
-  } catch (error) {
+  } catch (error: any) {
+    if (error?.code === 'E_ALREADY_OWNED') {
+      return await restorePurchases();
+    }
     console.error('Error purchasing product:', error);
     return false;
   }
@@ -187,23 +225,35 @@ export async function getPurchaseState(): Promise<PurchaseState> {
     };
   }
 }
-
 export async function getSubscriptionStatus(): Promise<SubscriptionStatus> {
+  if (isWeb) return { isSubscribed: false };
+
   try {
     const availablePurchases = await getAvailablePurchases();
     const subscriptions = availablePurchases.filter(
       p => p.productId === SUBSCRIPTION_SKUS.MONTHLY
     );
 
-    // Find the latest valid subscription
-    const latestSubscription = subscriptions
-      .sort((a, b) => b.transactionDate - a.transactionDate)
-      .find(p => p.transactionDate * 1000 > Date.now());
+    // For iOS, we should ideally use server-side receipt validation
+    // This is a fallback for client-side only
+    const now = Date.now();
+    let latestSubscription: Purchase | undefined;
+    let latestExpiry = 0;
 
-    const isSubscribed = !!latestSubscription;
+    for (const sub of subscriptions) {
+      // iOS-specific fields (transactionDate in SECONDS since epoch)
+      const purchaseTime = sub.transactionDate * 1000; // Convert to ms
+      const expiryTime = purchaseTime + 30 * 24 * 3600 * 1000; // Approximate 30 days
+      
+      if (expiryTime > now && expiryTime > latestExpiry) {
+        latestSubscription = sub;
+        latestExpiry = expiryTime;
+      }
+    }
+
     return {
-      isSubscribed,
-      expiryDate: latestSubscription?.transactionDate ? latestSubscription.transactionDate * 1000 : undefined,
+      isSubscribed: !!latestSubscription,
+      expiryDate: latestExpiry || undefined,
       latestReceipt: latestSubscription?.transactionReceipt
     };
   } catch (error) {
@@ -214,13 +264,20 @@ export async function getSubscriptionStatus(): Promise<SubscriptionStatus> {
 
 export async function consumeGeneration() {
   try {
-    const [free, purchased] = await Promise.all([
+    const [free, purchased, unlimited] = await Promise.all([
       SecureStore.getItemAsync(FREE_GENERATIONS_KEY),
-      SecureStore.getItemAsync(PURCHASED_USES_KEY)
+      SecureStore.getItemAsync(PURCHASED_USES_KEY),
+      SecureStore.getItemAsync(PURCHASED_UNLIMITED_KEY)
     ]);
+
+    const isUnlimited = unlimited === 'true';
 
     let freeCount = parseInt(free || '0');
     let purchasedCount = parseInt(purchased || '0');
+
+    if (isUnlimited) {
+      return;
+    }
 
     if (purchasedCount > 0) {
       purchasedCount--;
@@ -231,5 +288,6 @@ export async function consumeGeneration() {
     }
   } catch (error) {
     console.error('Error consuming generation:', error);
+    throw error;
   }
 }

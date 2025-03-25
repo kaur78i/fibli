@@ -9,6 +9,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { LanguageProvider } from '@/context/LanguageContext';
 import { UserPreferencesProvider } from '@/context/UserPreferencesContext';
 import { ThemeProvider } from '@/context/ThemeContext';
+import { endPurchaseConnection, initializePurchases } from '@/services/purchase';
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
@@ -30,6 +31,14 @@ export default function RootLayout() {
     }
   }, [fontsLoaded, fontError]);
 
+  useEffect(() => {
+    initializePurchases();
+
+    return () => {
+      endPurchaseConnection();
+    };
+  }, []);
+  
   useEffect(() => {
     onLayoutRootView();
   }, [onLayoutRootView]);

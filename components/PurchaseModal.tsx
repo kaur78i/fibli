@@ -10,7 +10,7 @@ import {
 	Alert,
 	ActivityIndicator,
 } from 'react-native';
-import { purchaseOneTimeProduct, purchaseSubscription, SUBSCRIPTION_SKUS, ONE_TIME_PURCHASES, getPurchaseState } from '@/services/purchase';
+import { purchaseOneTimeProduct, purchaseSubscription, SUBSCRIPTION_SKUS, ONE_TIME_PURCHASES, getPurchaseState, restorePurchases } from '@/services/purchase';
 import * as Animatable from 'react-native-animatable';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '@/context/ThemeContext';
@@ -120,6 +120,30 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
 		}
 	};
 
+	const handleRestore = async () => {
+		setIsPurchasing(true);
+		setError(null);
+		
+		try {
+			const success = await restorePurchases();
+			if (success) {
+				// Refresh purchase state
+				const newState = await getPurchaseState();
+				setPurchases({
+					oneTime: newState.purchasedUses >= 20,
+					subscription: newState.isSubscribed,
+				});
+				Alert.alert(t.success, t.purchasesRestored);
+			} else {
+				setError(t.restoreFailed);
+			}
+		} catch (error) {
+			setError(t.restoreFailed);
+		} finally {
+			setIsPurchasing(false);
+		}
+	};
+
 	return (
 		<Modal
 			visible={visible}
@@ -146,6 +170,16 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
 							<Text style={styles.subtitle}>{t.selectThePerfectPlanForYou}</Text>
 						</Animatable.View>
 					</LinearGradient>
+
+					<TouchableOpacity
+						style={[styles.restoreButton, { borderColor: colors.primary }]}
+						onPress={handleRestore}
+						disabled={isPurchasing}
+					>
+						<Text style={[styles.restoreButtonText, { color: colors.primary }]}>
+							{isPurchasing ? t.restoring : t.restorePurchases}
+						</Text>
+					</TouchableOpacity>
 
 					<ScrollView style={styles.optionsContainer}>
 						{purchaseOptions.map((option, index) => (
@@ -361,6 +395,17 @@ const styles = StyleSheet.create({
 		marginBottom: 8,
 		fontSize: 14,
 		fontFamily: 'Inter-Regular',
+	},
+	restoreButton: {
+		padding: 12,
+		borderRadius: 8,
+		borderWidth: 1,
+		marginBottom: 16,
+		alignItems: 'center',
+	},
+	restoreButtonText: {
+		fontSize: 16,
+		fontWeight: '600',
 	},
 });
 

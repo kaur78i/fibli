@@ -134,6 +134,10 @@ const translations = {
     annualBilling: 'Annual billing',
     processing: 'Processing...',
     purchase: 'Purchase',
+    restorePurchases: 'Restore Purchases',
+    restoring: 'Restoring...',
+    purchasesRestored: 'Purchases restored successfully',
+    restoreFailed: 'Restore failed',
   },
 
   es: {
@@ -252,6 +256,10 @@ const translations = {
     annualBilling: 'Anual',
     processing: 'Procesando...',
     purchase: 'Comprar',
+    restorePurchases: 'Restaurar compras',
+    restoring: 'Restaurando...',
+    purchasesRestored: 'Compras restauradas correctamente',
+    restoreFailed: 'Error al restaurar las compras',
   },
 
   fr: {
@@ -369,6 +377,10 @@ const translations = {
     annualBilling: 'Annuel',
     processing: 'Traitement...',
     purchase: 'Acheter',
+    restorePurchases: 'Restaurer les achats',
+    restoring: 'Restauration...',
+    purchasesRestored: 'Achats restaurés avec succès',
+    restoreFailed: 'Erreur lors de la restauration des achats',
   },
 
   de: {
@@ -488,6 +500,10 @@ const translations = {
     annualBilling: 'Jährlich',
     processing: 'Verarbeitung...',
     purchase: 'Kaufen',
+    restorePurchases: 'Einkäufe wiederherstellen',
+    restoring: 'Wiederherstellung...',
+    purchasesRestored: 'Einkäufe erfolgreich wiederhergestellt',
+    restoreFailed: 'Fehler beim Wiederherstellen der Einkäufe',
   },
 
   it: {
@@ -607,6 +623,10 @@ const translations = {
     annualBilling: 'Annuale',
     processing: 'Elaborazione...',
     purchase: 'Acquista',
+    restorePurchases: 'Ripristina acquisti',
+    restoring: 'Ripristinando...',
+    purchasesRestored: 'Acquisti ripristinati con successo',
+    restoreFailed: 'Errore nel ripristinare gli acquisti',
   },
 
   pt: {
@@ -726,6 +746,10 @@ const translations = {
     annualBilling: 'Anual',
     processing: 'Processando...',
     purchase: 'Comprar',
+    restorePurchases: 'Restaurar compras',
+    restoring: 'Restaurando...',
+    purchasesRestored: 'Compras restauradas correctamente',
+    restoreFailed: 'Error al restaurar las compras',
   },
 };
 
