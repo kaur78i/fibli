@@ -77,7 +77,7 @@ All image prompts MUST be in English regardless of the story language.
 Return your response in the following JSON format:
 {
   "preview": "A compelling 3-4 sentences summary that captures the story's essence and appeal",
-  "imagePrompt": "A detailed, child-friendly description for generating an illustration that captures the essence of the story. For each main character, clearly specify their type (e.g., animal, magical creature, object), physical characteristics (size, color scheme, distinctive features), and any accessories or clothing they wear. For example, 'Luna the purple butterfly with silver-sparkled wings and a tiny golden crown' or 'Max the friendly brown rabbit with round glasses and a blue backpack'. These character descriptions will serve as the foundation for maintaining consistent character appearances throughout all chapter illustrations. Include details about the setting, mood, and key story elements. Use a 3D Pixar-style cartoon aesthetic with warm lighting and rich details. Avoid any scary elements and ensure it's appropriate for young children. (min 200 words)",
+  "imagePrompt": "A detailed, child-friendly description for generating an illustration that captures the essence of the story. For each main character, clearly specify their type (e.g., animal, magical creature, object), physical characteristics (size, color scheme, distinctive features), and any accessories or clothing they wear. For example, 'Luna the purple butterfly with silver-sparkled wings and a tiny golden crown' or 'Max the friendly brown rabbit with round glasses and a blue backpack'. These character descriptions will serve as the foundation for maintaining consistent character appearances throughout all chapter illustrations. Include details about the setting, mood, and key story elements. Use a 3D Pixar-style cartoon aesthetic with warm lighting and rich details. Avoid any scary elements and ensure it's appropriate for young children. All image prompts MUST be in English regardless of the story language. (min 200 words)",
   "chapters": [
     "Chapter 1: [Descriptive Title] - Engaging description that sets up the beginning (30-40 words)",
     "Chapter 2: [Descriptive Title] - Compelling description for the next story development (30-40 words)",
@@ -239,6 +239,9 @@ ${JSON.stringify(gist, null, 2)}
    - Child-friendly elements
    - Rich background details
    - Safe and appropriate content
+
+4. LANGUAGE:
+   - All image prompts MUST be in English regardless of the story language.
 
 Minimum 200 words, focusing on visual clarity and maintaining character consistency."
     }

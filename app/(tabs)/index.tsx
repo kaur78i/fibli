@@ -147,10 +147,6 @@ export default function NewStoryScreen() {
     }
   }
 
-  useEffect(() => {
-    setPurchaseModalVisible(true);
-  }, []);
-
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <LinearGradient

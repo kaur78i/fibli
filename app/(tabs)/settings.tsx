@@ -56,7 +56,7 @@ export default function SettingsScreen() {
         success = await purchaseSubscription(SUBSCRIPTION_SKUS.MONTHLY);
       }
       if (!success) {
-        throw new Error('Purchase failed');
+        throw new Error(t.purchaseFailed);
       }
       setPurchases(prev => ({
         ...prev,
