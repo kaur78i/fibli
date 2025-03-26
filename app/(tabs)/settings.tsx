@@ -8,7 +8,7 @@ import { useLanguage } from '@/context/LanguageContext';
 import { useUserPreferences } from '@/context/UserPreferencesContext';
 import { useTheme } from '@/context/ThemeContext';
 import Slider from '@/components/Slider';
-import { ONE_TIME_PURCHASES, purchaseOneTimeProduct, SUBSCRIPTION_SKUS, purchaseSubscription, getPurchaseState, restorePurchases, getMyProducts } from '@/services/purchase';
+import { ONE_TIME_PURCHASES, purchaseOneTimeProduct, SUBSCRIPTION_SKUS, purchaseSubscription, getPurchaseState, getMyProducts } from '@/services/purchase';
 import { ProductIOS } from 'react-native-iap';
 import { SubscriptionIOS } from 'react-native-iap';
 
@@ -21,7 +21,6 @@ export default function SettingsScreen() {
   const [isPurchasesLoading, setIsPurchasesLoading] = useState(true);
   const [products, setProducts] = useState<Array<SubscriptionIOS | ProductIOS>>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [purchases, setPurchases] = useState({
     [SUBSCRIPTION_SKUS.MONTHLY]: false,
     [ONE_TIME_PURCHASES.TWENTY_USES]: false,
@@ -51,13 +50,13 @@ export default function SettingsScreen() {
     setTheme(newTheme);
   };
 
-  const handlePurchase = async (type: 'com.fibli.iap.twentyusagenerations' | 'com.fibli.subscription.monthlyunlimited') => {
+  const handlePurchase = async (type: typeof ONE_TIME_PURCHASES.TWENTY_USES | typeof SUBSCRIPTION_SKUS.MONTHLY) => {
     let success = false;
     try {
       if (purchases[type]) return;
-      if (type === 'com.fibli.iap.twentyusagenerations') {
+      if (type === ONE_TIME_PURCHASES.TWENTY_USES) {
         success = await purchaseOneTimeProduct(ONE_TIME_PURCHASES.TWENTY_USES);
-      } else {
+      } else if (type === SUBSCRIPTION_SKUS.MONTHLY) {
         success = await purchaseSubscription(SUBSCRIPTION_SKUS.MONTHLY);
       }
       if (!success) {
@@ -77,37 +76,19 @@ export default function SettingsScreen() {
     }
   };
 
-  const handleRestorePurchases = async () => {
-    setIsPurchasesLoading(true);
-
-    try {
-      const success = await restorePurchases();
-      if (success) {
-        // Refresh purchase state
-        const newState = await getPurchaseState();
-        setPurchases({
-          [ONE_TIME_PURCHASES.TWENTY_USES]: newState.purchasedUses >= 20,
-          [SUBSCRIPTION_SKUS.MONTHLY]: newState.isSubscribed,
-        });
-        Alert.alert(t.success, t.purchasesRestored);
-      } else {
-        alert(t.restoreFailed);
-      }
-    } catch (error) {
-      alert(t.restoreFailed);
-    } finally {
-      setIsPurchasesLoading(false);
-    }
-  };
-
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         const products = await getMyProducts();
         setProducts(products);
         setIsLoading(false);
-      } catch (error) {
-        setError(t.purchaseFailed);
+      } catch (error: any) {
+        console.error('Error fetching products:', error);
+        if (Platform.OS === 'web') {
+          alert(t.error + ': ' + error.message);
+        } else {
+          Alert.alert(t.error, t.purchaseFailed + ': ' + error.message);
+        }
         setIsLoading(false);
       }
     };

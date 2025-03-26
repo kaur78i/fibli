@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { StyleSheet, Text, View, SafeAreaView, FlatList, TouchableOpacity, Platform, Alert } from 'react-native';
 import { useFocusEffect, useRouter, useLocalSearchParams } from 'expo-router';
-import { CreditCard as Edit2, Trash2, BookOpen, Sparkles, Share2 } from 'lucide-react-native';
+import { CreditCard as Edit2, Trash2, BookOpen, Sparkles, Share } from 'lucide-react-native';
 import * as Animatable from 'react-native-animatable';
 import { LinearGradient } from 'expo-linear-gradient';
 import StoryCard from '@/components/StoryCard';
@@ -192,7 +192,7 @@ export default function LibraryScreen() {
           style={[styles.actionButton, { backgroundColor: colors.background }]}
           onPress={() => handleShare(gist.id!)}
         >
-          <Share2 size={18} color={colors.primary} />
+          <Share size={18} color={colors.primary} />
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.actionButton, { backgroundColor: colors.background }]}

@@ -152,61 +152,78 @@ export default function StoryScreen() {
 
   const startSpeaking = () => {
     if (currentChapter) {
-      setIsSpeaking(true);
-      setIsPaused(false);
-
       // Get the appropriate language locale for speech
       const locale = getLocaleForSpeech();
 
-      // On web, Speech might not be fully supported, so we check platform
-      if (Platform.OS !== 'web') {
-        Speech.speak(currentChapter.content, {
-          language: locale,
-          rate: preferences.speechSettings.rate,
-          pitch: preferences.speechSettings.pitch,
-          onDone: () => {
-            setIsSpeaking(false);
-            setReadingProgress(1);
+      // First stop any ongoing speech
+      Speech.stop().then(() => {
+        // Check if speech is available
+        Speech.isSpeakingAsync().then(() => {
+          setIsSpeaking(true);
+          setIsPaused(false);
 
-            if (story && currentChapterIndex < story.chapters.length - 1) {
-              advanceToNextChapter();
-            }
-          },
-          onError: () => {
-            setIsSpeaking(false);
-          },
-          onStopped: () => {
-            setIsSpeaking(false);
+          if (Platform.OS !== 'web') {
+            // For iOS/Android, we need to handle the speech options more carefully
+            const speechOptions = {
+              language: locale,
+              rate: Platform.OS === 'ios' ? preferences.speechSettings.rate * 0.7 : preferences.speechSettings.rate, // iOS rate needs adjustment
+              pitch: preferences.speechSettings.pitch,
+              onDone: () => {
+                setIsSpeaking(false);
+                setReadingProgress(1);
+
+                if (story && currentChapterIndex < story.chapters.length - 1) {
+                  advanceToNextChapter();
+                }
+              },
+              onError: (error: any) => {
+                console.error('Speech error:', error);
+                setIsSpeaking(false);
+              },
+              onStopped: () => {
+                setIsSpeaking(false);
+              }
+            };
+
+            Speech.speak(currentChapter.content, speechOptions);
+          } else {
+            // For web, we'll just simulate speech with a timeout
+            const simulatedReadingTime = currentChapter.content.length * 50; // Rough approximation
+
+            // Start progress animation
+            let startTime = Date.now();
+            const updateProgress = () => {
+              if (!isSpeaking) return;
+
+              const elapsed = Date.now() - startTime;
+              const progress = Math.min(elapsed / simulatedReadingTime, 1);
+              setReadingProgress(progress);
+
+              if (progress < 1) {
+                requestAnimationFrame(updateProgress);
+              } else {
+                setIsSpeaking(false);
+                setReadingProgress(1);
+
+                // When reading completes, advance to next chapter after a delay
+                if (story && currentChapterIndex < story.chapters.length - 1) {
+                  advanceToNextChapter();
+                }
+              }
+            };
+
+            updateProgress();
+          }
+        }).catch(error => {
+          console.error('Speech not available:', error);
+          if (Platform.OS === 'ios') {
+            Alert.alert(
+              'Speech Error',
+              'Text-to-speech is not available. Please check your device settings.'
+            );
           }
         });
-      } else {
-        // For web, we'll just simulate speech with a timeout
-        const simulatedReadingTime = currentChapter.content.length * 50; // Rough approximation
-
-        // Start progress animation
-        let startTime = Date.now();
-        const updateProgress = () => {
-          if (!isSpeaking) return;
-
-          const elapsed = Date.now() - startTime;
-          const progress = Math.min(elapsed / simulatedReadingTime, 1);
-          setReadingProgress(progress);
-
-          if (progress < 1) {
-            requestAnimationFrame(updateProgress);
-          } else {
-            setIsSpeaking(false);
-            setReadingProgress(1);
-
-            // When reading completes, advance to next chapter after a delay
-            if (story && currentChapterIndex < story.chapters.length - 1) {
-              advanceToNextChapter();
-            }
-          }
-        };
-
-        updateProgress();
-      }
+      });
     }
   };
 

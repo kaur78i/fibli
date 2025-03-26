@@ -10,7 +10,7 @@ import {
 	Alert,
 	ActivityIndicator,
 } from 'react-native';
-import { purchaseOneTimeProduct, purchaseSubscription, SUBSCRIPTION_SKUS, ONE_TIME_PURCHASES, getPurchaseState, restorePurchases, getMyProducts } from '@/services/purchase';
+import { purchaseOneTimeProduct, purchaseSubscription, SUBSCRIPTION_SKUS, ONE_TIME_PURCHASES, getPurchaseState, getMyProducts } from '@/services/purchase';
 import * as Animatable from 'react-native-animatable';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '@/context/ThemeContext';
@@ -61,11 +61,20 @@ const PurchaseModal: React.FC<PurchaseModalProps> = ({
 		setIsPurchasing(true);
 		setError(null);
 		try {
-			const success = await purchaseSubscription(SUBSCRIPTION_SKUS.MONTHLY);
-			if (success) {
-				Alert.alert(t.success, t.purchaseSuccessful);
-			} else {
-				setError(t.purchaseFailed);
+			if (selectedOption === SUBSCRIPTION_SKUS.MONTHLY) {
+				const success = await purchaseSubscription(SUBSCRIPTION_SKUS.MONTHLY);
+				if (success) {
+					Alert.alert(t.success, t.purchaseSuccessful);
+				  } else {
+					setError(t.purchaseFailed);
+				}
+			} else if (selectedOption === ONE_TIME_PURCHASES.TWENTY_USES) {
+				const success = await purchaseOneTimeProduct(ONE_TIME_PURCHASES.TWENTY_USES);
+				if (success) {
+					Alert.alert(t.success, t.purchaseSuccessful);
+				} else {
+					setError(t.purchaseFailed);
+				}
 			}
 		} catch (error) {
 			setError(t.purchaseFailed);
